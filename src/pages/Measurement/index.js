@@ -920,7 +920,7 @@ transition: transform 0.3s;
                                 <Info>
                                     <Title>Próximo Horário</Title>
                                     <Time>14:30</Time>
-                                    {<Details>Anderson Mascia</Details>}
+                                    {<Details>Antônio Mascia</Details>}
                                 </Info>
                             </CardT>
                       

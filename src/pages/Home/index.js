@@ -104,7 +104,7 @@ const Home = () => {
                         <FormControl color='primary'  >
                             <Logo src='/logoplatform.jpg' alt='id' />
                             <Title>
-                               Painel Administrativo de Anderson Mascia
+                               Painel Administrativo de Antônio Mascia
                             </Title>
                             <TextField
                                 id="outlined-multiline-flexible"
