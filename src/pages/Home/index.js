@@ -1,4 +1,4 @@
-import * as React from 'react';
+import  React from 'react';
 import { Container, Input, Title, FormControl, Logo, SubTitle, Body, Container1, ImageBackground } from './styles';
 import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
@@ -170,3 +170,70 @@ const Home = () => {
 
 export default Home
 
+
+/*
+const employees = ["Carlos", "Maria", "João", "Ana", "Pedro"];
+const workHours = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"];
+const weekDays = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
+
+const sendWhatsAppMessage = (message) => {
+  const phoneNumber = "5511999999999"; // Substitua pelo número desejado
+  const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  window.open(url, "_blank");
+};
+
+const fetchBookedAppointments = async () => {
+  const response = await fetch("/api/appointments");
+  const data = await response.json();
+  return data;
+};
+
+export default function MockAppointments() {
+  const [bookedAppointments, setBookedAppointments] = useState([]);
+  const [availableTimes, setAvailableTimes] = useState([]);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [userMessage, setUserMessage] = useState("");
+
+  useEffect(() => {
+    const loadBookedAppointments = async () => {
+      const booked = await fetchBookedAppointments();
+      setBookedAppointments(booked);
+    };
+    loadBookedAppointments();
+  }, []);
+
+  useEffect(() => {
+    const freeTimes = workHours.filter(
+      (time) => !bookedAppointments.some((appt) => appt.time === time)
+    );
+    setAvailableTimes(freeTimes);
+  }, [bookedAppointments]);
+
+  useEffect(() => {
+    if (userMessage.toLowerCase() === "agendar") {
+      const timesMessage = `Horários disponíveis:\n${availableTimes.join("\n")}`;
+      sendWhatsAppMessage(timesMessage);
+    } else if (availableTimes.includes(userMessage)) {
+      setSelectedTime(userMessage);
+      const availableEmployees = employees.filter(
+        (emp) => !bookedAppointments.some((appt) => appt.time === userMessage && appt.employee === emp)
+      );
+      if (availableEmployees.length > 0) {
+        const employeesList = availableEmployees.map((emp, index) => `${index + 1}. ${emp}`).join("\n");
+        sendWhatsAppMessage(`Funcionários disponíveis para ${userMessage}:\n${employeesList}`);
+      }
+    } else if (employees.includes(userMessage)) {
+      const isEmployeeAvailable = !bookedAppointments.some(
+        (appt) => appt.time === selectedTime && appt.employee === userMessage
+      );
+      if (isEmployeeAvailable) {
+        setSelectedEmployee(userMessage);
+        console.log("Agendamento confirmado:", { horario: selectedTime, funcionario: userMessage });
+      }
+    } else if (userMessage) {
+      sendWhatsAppMessage("Entrada inválida. Escolha um horário disponível ou um funcionário válido.");
+    }
+  }, [userMessage]);
+
+*/

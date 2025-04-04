@@ -1,6 +1,7 @@
 import firebase from "firebase/compat/app";
 import { getDatabase, ref, set, get,child } from "firebase/database";
 import { Globalurl } from "../Globals/globals";
+import axios from "axios";
 
 export function getClients() {
     const arrayClientes = []
@@ -15,11 +16,11 @@ export function getClients() {
 
 export async function sendMessageAll(body) {
   try {
-    const response = await fetch(`${Globalurl}/send-text`, {
+    const response = await fetch(`${Globalurl}/instances/3DF2E27C377550AFA39732C54B267657/token/FE864889C299B28B12147400/send-text`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
-        'Client-Token': 'F5cdad44569cc4be0b47eb93c308ddbf4S',
+        'Client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS',
       },
       body: JSON.stringify(body),
     });
@@ -44,7 +45,7 @@ export function createInstance(body) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
-       'client-Token': 'F5cdad44569cc4be0b47eb93c308ddbf4S'
+       'client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS'
     },
     body: JSON.stringify(body)
   })
@@ -59,7 +60,7 @@ export async function lerQRCode(idi, tokeni) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'client-Token': 'F5cdad44569cc4be0b47eb93c308ddbf4S',
+        'client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS',
       },
     });
 
@@ -79,7 +80,7 @@ export async function listingInstances(idi, tokeni) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'client-Token': 'F5cdad44569cc4be0b47eb93c308ddbf4S',
+        'client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS',
       },
     });
 
@@ -102,7 +103,7 @@ export async function dataInstance(idi, tokeni) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'client-Token': 'F5cdad44569cc4be0b47eb93c308ddbf4S',
+        'client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS',
       },
     });
 
@@ -124,7 +125,7 @@ export async function sendImage(bodyImage) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
-        'Client-Token': 'F5cdad44569cc4be0b47eb93c308ddbf4S',
+        'Client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS',
       },
       body: JSON.stringify(bodyImage),
     });
@@ -170,3 +171,54 @@ export async function createClient(body) {
     throw error; // Relança o erro para tratamento externo
   }
 }
+
+
+
+export async function readMessage(idi,tokeni) {
+  try {
+    const response = await fetch(`${Globalurl}/instances/${idi}/token/${tokeni}/read-message`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
+        'Client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS',
+      },
+      body: JSON.stringify(),
+    });
+
+    // Verifica se a resposta está OK
+    if (!response.ok) {
+      throw new Error(`Erro na requisição: ${response.status} - ${response.statusText}`);
+    }
+
+    const result = await response.json(); // Aguarda a conversão para JSON
+    console.log('Success:', result);
+
+    return result; // Retorna o resultado, se necessário
+  } catch (error) {
+    console.error('Error:', error);
+    throw error; // Relança o erro, se você quiser tratá-lo fora dessa função
+  }
+}
+
+export const atualizarWebhook = async () => {
+  const instancia = '3DF2E27C377550AFA39732C54B267657'; // Substitua pelo ID da sua instância
+  const token = 'FE864889C299B28B12147400'; // Substitua pelo seu token
+  const novaUrlWebhook = 'https://backendpedro.vercel.app/webhook'; // Apontando para a rota correta
+
+  try {
+    const resposta = await axios.put(
+      `https://api.z-api.io/instances/${instancia}/token/${token}/update-webhook-received`,
+      { value: novaUrlWebhook }, // Corpo da requisição
+      {
+        headers: {
+          'Client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS', // Se necessário
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    console.log('✅ Webhook atualizado com sucesso:', resposta.data);
+  } catch (erro) {
+    console.error('❌ Erro ao atualizar o webhook:', erro.response ? erro.response.data : erro.message);
+  }
+};

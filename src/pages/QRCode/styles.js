@@ -24,6 +24,10 @@ export const FormContainer = styled.div`
   gap:8px;
   align-items:center;
   justify-content:center;
+
+    @media (max-width: 768px) {
+    width:80%;
+  }
 `;
 
 export const Title = styled.a`

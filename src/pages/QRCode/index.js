@@ -39,8 +39,8 @@ const QRCodePage = () => {
         if(connected){
             return window.alert('Conectado')
         }else{
-            const idi = '3D826867ABEC00CA23EBB2D4EBC7E202';
-            const tokeni = '9A63F56F86E49E2446ED34DD';
+            const idi = '3DF2E27C377550AFA39732C54B267657';
+            const tokeni = 'FE864889C299B28B12147400';
     
             try {
                 const response = await lerQRCode(idi, tokeni); // Aguarda a função retornar o resultado
@@ -54,8 +54,8 @@ const QRCodePage = () => {
     }
 
     async function listingInstacesValue() {
-        const idi = '3D826867ABEC00CA23EBB2D4EBC7E202';
-        const tokeni = '9A63F56F86E49E2446ED34DD';
+        const idi = '3DF2E27C377550AFA39732C54B267657';
+        const tokeni = 'FE864889C299B28B12147400';
 
         try {
             const response = await listingInstances(); // Aguarda a função retornar o resultado
@@ -66,8 +66,8 @@ const QRCodePage = () => {
     }
 
     async function dataInstanceValue() {
-        const idi = '3D826867ABEC00CA23EBB2D4EBC7E202';
-        const tokeni = '9A63F56F86E49E2446ED34DD';
+        const idi = '3DF2E27C377550AFA39732C54B267657';
+        const tokeni = 'FE864889C299B28B12147400';
 
         try {
             const response = await dataInstance(idi,tokeni); // Aguarda a função retornar o resultado
@@ -102,7 +102,7 @@ const QRCodePage = () => {
             <FormContainer>
 
                 <Title>Gere seu QRCode WhatsApp</Title>
-                <Title>Para registro do seu número</Title>
+                <Title>Para se conectar a automação</Title>
                 <Title>Você terá 20 segundos para ler seu QRCode</Title>
                 
                 <RenderQR />
