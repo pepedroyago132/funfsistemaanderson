@@ -103,7 +103,7 @@ const actions = [
 
 
 const employees = ["Carlos", "Maria", "João", "Ana", "Pedro"];
-const workHours = [ "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30"];
+const workHours = ["10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30"];
 const weekDays = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
 
 
@@ -120,13 +120,16 @@ const Measurement = () => {
     const [farmaceutico, setFarmaceutico] = React.useState('');
     const [dataClientes, setDataClientes] = React.useState([]);
     const [clientesRecompra, setClientesRecompra] = React.useState([]);
-    const [dataClientesSelecionados, setDataClientesSelecionados] = React.useState([]);
+    const [agendamentoData, setAgendamento] = React.useState({
+        time: '',
+        employee: ''
+    });
     const [time, setTime] = React.useState('');
     const [formattedTime, setFormattedTime] = React.useState('');
     const [date, setDate] = React.useState('');
     const [filteredData, setFilteredData] = React.useState([]);
     const [filterValue, setFilterValue] = React.useState('');
-    const [user, setUser] = React.useState({ email: 'alo' });
+    const [user, setUser] = React.useState(false);
     const [novaData, setNovaData] = React.useState(null);
     const [clientForTime, setClientforTime] = React.useState([{ clientes: [] }]);
     const [connectednumber, setConnectedNumber] = React.useState(false);
@@ -148,8 +151,11 @@ const Measurement = () => {
     const [selectedTime, setSelectedTime] = React.useState(null);
     const [selectedEmployee, setSelectedEmployee] = React.useState(null);
     const [userMessage, setUserMessage] = React.useState("");
-  
-  
+    const [nextBooked, setNextBooked] = React.useState(null);
+
+
+
+
 
     const ContainerT = styled.div`
   display: grid;
@@ -284,12 +290,12 @@ transition: transform 0.3s;
     const handleOpenList = () => setOpenList(true);
     const handleCloseList = () => setOpenList(false);
     const columns = [
-
+        { field: 'id', headerName: 'id', width: 150 },
         { field: 'nome', headerName: 'Nome', width: 130 },
-        { field: 'remedio', headerName: 'Horário', width: 150 },
-        { field: 'contato', headerName: 'Confirmado', width: 130 },
-        { field: 'dataCadastro', headerName: 'Agendado em', width: 150 },
-        { field: 'doses', headerName: 'Valor', width: 130 },
+        { field: 'employee', headerName: 'Quem Atende', width: 150 },
+        { field: 'time', headerName: 'Horário', width: 130 },
+        { field: 'phone', headerName: 'Contato', width: 150 }
+
     ];
 
     const data = [
@@ -303,7 +309,7 @@ transition: transform 0.3s;
     const paginationModel = { page: 0, pageSize: 5 };
 
 
-    
+
     const handleRowSelection = (selectionModel) => {
         // Pegar os dados das linhas selecionadas
         const selectedRowsData = filteredData.filter((row) => selectionModel.includes(row.id));
@@ -398,129 +404,225 @@ transition: transform 0.3s;
         }
     }
 
-
     React.useEffect(() => {
-        const loadBookedAppointments = async () => {
-          const booked = await fetchBookedAppointments();
-          setBookedAppointments(booked);
-        };
-        loadBookedAppointments();
-      }, []);
-      React.useEffect(() => {
-        const freeTimes = workHours.filter(
-          (time) => !(bookedAppointments ?? []).some((appt) => appt.time === time)
-        );
-        setAvailableTimes(freeTimes);
-      }, [bookedAppointments]);
-      
-  
-      React.useEffect(() => {
-        const instancia = "3DF2E27C377550AFA39732C54B267657"; // Substitua pelo ID da instância
-        const token = "FE864889C299B28B12147400"; // Substitua pelo token
-        const novaUrlWebhook = "https://backendpedro.vercel.app/webhook";
-    
-        const atualizarWebhook = async () => {
-          try {
-            const resposta = await fetch(
-              `https://api.z-api.io/instances/${instancia}/token/${token}/update-webhook-received`,
-              {
-                method: "PUT",
-                headers: {
-                  "Client-Token": "Fdebf3e36c3324200aa413613db04c3bfS",
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ value: novaUrlWebhook }),
-              }
-            );
-    
-            const dados = await resposta.json();
-            console.log("✅ Webhook atualizado com sucesso:", dados);
-          } catch (erro) {
-            console.error("❌ Erro ao atualizar o webhook:", erro);
-          }
-        };
-    
-        const interval = setInterval(atualizarWebhook, 3000);
-    
-        return () => clearInterval(interval);
-      }, []);
+        const db = getDatabase()
+        const auth = getAuth();
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUser(user)
+                const db = getDatabase();
+                const appointmentsRef = ref(db, `${base64.encode(user.email)}/agendamentos`);
 
+                const unsubscribe = onValue(appointmentsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    const formatted = data
+                        ? Object.values(data).map((appt) => ({
+                            time: appt.time,
+                            employee: appt.employee,
+                            time: appt.time,
+                            id: appt.id,
+                            phone: appt.phone,
+                            nome: appt.nome
+                        }))
+                        : [];
+                    setBookedAppointments(formatted);
+                });
 
-      React.useEffect(() => {
-        const atualizar = async () => {
-          try {
-            const response = await fetch('https://backendpedro.vercel.app/dadosChat', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            })
-            if (!response.ok) {
-              throw new Error(`Erro: ${response.status} - ${response.statusText}`);
+                return () => unsubscribe();
             }
-      
-            const result = await response.json();
-          
-           setMessageDataUser(result)
-           setUserMessage(result.text.message)
-          } catch (error) {
-            console.error('Erro ao buscar dados:', error);
-          }
-        };
-      
-      
-      
-        const interval = setInterval(() => {
-          atualizar();
-        }, 5000);
-      
-        return () => clearInterval(interval);
-      }, []);
+        }
+        )
 
-   console.log(messageDataUser)
-   console.log(userMessage)
- 
+    }, [])
 
     React.useEffect(() => {
-        const regexHorario = /^([01]\d|2[0-3]):([0-5]\d)$/; // Formato HH:MM, 24h
+        const instancia = "3DF53EC07AF0D01F62ABFA8592F99CB9"; // Substitua pelo ID da instância
+        const token = "C80CBD1255FF196EDC3CB4C9"; // Substitua pelo token
+        const novaUrlWebhook = "https://backendpedro.vercel.app/webhook";
+
+        const atualizarWebhook = async () => {
+            try {
+                const resposta = await fetch(
+                    `https://api.z-api.io/instances/${instancia}/token/${token}/update-webhook-received`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Client-Token": "F17ab686d48a14e5ab2d713edb6c171aaS",
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ value: novaUrlWebhook }),
+                    }
+                );
+
+                const dados = await resposta.json();
+                console.log("✅ Webhook atualizado com sucesso:", dados);
+            } catch (erro) {
+                console.error("❌ Erro ao atualizar o webhook:", erro);
+            }
+        };
+
+        const interval = setInterval(atualizarWebhook, 5000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+
+    React.useEffect(() => {
+        const atualizar = async () => {
+            try {
+                const response = await fetch('https://backendpedro.vercel.app/dadosChat', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                if (!response.ok) {
+                    throw new Error(`Erro: ${response.status} - ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                setMessageDataUser(result)
+                setUserMessage(result.text.message)
+            } catch (error) {
+                console.error('Erro ao buscar dados:', error);
+            }
+        };
+
+
+
+        const interval = setInterval(() => {
+            atualizar();
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    console.log(messageDataUser)
+
+
+
+
+
+    console.log('EMAILUSUARIO:::::::::', user.email)
+    React.useEffect(() => {
+        if (bookedAppointments) {
+            const freeTimes = workHours.filter((time) => {
+                const availableEmployees = employees.filter(
+                    (emp) =>
+                        !bookedAppointments.some(
+                            (appt) => appt.time === time && appt.employee === emp
+                        )
+                );
+                return availableEmployees.length > 0;
+            });
+
+            setAvailableTimes(freeTimes);
+        } else return null;
+    }, [bookedAppointments]);
+
+
+    React.useEffect(() => {
+
         if (userMessage.toLowerCase() === "agendar") {
-          const timesList = availableTimes.map((time, index) => `${index + 1}. ${time}`).join("\n");
-          const timesMessage = `Olá Bem Vindo a minha loja, claro, vamos agendar seu horário, Horários disponíveis São esses:\n${timesList}`;
-          const body = {
-            message: timesMessage,
-            phone: `+${messageDataUser.phone}`,
-            delayMessage: 2
-        }
-          sendMessageAll(body);
-        } 
-          if (regexHorario.test(userMessage)) {
-            const employeesList = employees.map((emp, index) => `${index + 1}. ${emp}`).join("\n");
+            const timesList = availableTimes.map((time, index) => `${index + 1}. ${time}`).join("\n");
+            const timesMessage = `Horários disponíveis:\n${timesList}`;
             const body = {
-                message: `Funcionários disponíveis para ${userMessage}:\n${employeesList}`,
+                message: timesMessage,
                 phone: `+${messageDataUser.phone}`,
                 delayMessage: 2
             }
+
             sendMessageAll(body);
-            setSelectedTime(userMessage)
-            console.log('lista enviada',userMessage)
-          }
+        }
+        else if (availableTimes.includes(userMessage)) {
+            setSelectedTime(userMessage);
+
+            const availableEmployees = employees.filter(
+                (emp) =>
+                    Array.isArray(bookedAppointments) &&
+                    !bookedAppointments.some(
+                        (appt) => appt.time === userMessage && appt.employee === emp
+                    )
+            );
+
+            if (availableEmployees.length > 0) {
+                const employeesList = availableEmployees
+                    .map((emp, index) => `${index + 1}. ${emp}`)
+                    .join("\n");
+
+                const body = {
+                    message: `Funcionários disponíveis para ${userMessage}:\n${employeesList}`,
+                    phone: `+${messageDataUser.phone}`,
+                    delayMessage: 2,
+                };
+
+                sendMessageAll(body);
+            }
+        }
         else if (employees.includes(userMessage)) {
+            const isEmployeeAvailable = Array.isArray(bookedAppointments) && !bookedAppointments.some(
+                (appt) => appt.time === selectedTime && appt.employee === userMessage
+            );
+
             setSelectedEmployee(userMessage);
-            console.log("Agendamento confirmado:", { horario: selectedTime, funcionario: userMessage });
             const body = {
                 message: `Agendamento Confirmado com ${userMessage} as ${selectedTime}`,
                 phone: `+${messageDataUser.phone}`,
                 delayMessage: 2
             }
-              sendMessageAll(body);
-        
+
+            const bodyError = {
+                message: `Instabildiade para agendamentos por WhatsApp no momento ${userMessage} as ${selectedTime}`,
+                phone: `+${messageDataUser.phone}`,
+                delayMessage: 2
+            }
+
+            if (selectedEmployee && selectedTime) {
+                const db = getDatabase();
+                set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), { time: selectedTime, employee: selectedEmployee, id: messageDataUser.phone, phone: messageDataUser.phone, nome: messageDataUser.senderName }).then(() => sendMessageAll(body)).catch(() => sendMessageAll(bodyError));
+
+            }
+
+
         }
-      }, [userMessage]);
+    }, [userMessage]);
+
+    console.log('agendamentos::::::::', bookedAppointments)
 
 
     /*          const isEmployeeAvailable = Array.isArray(bookedAppointments) && !bookedAppointments.some(
             (appt) => appt.time === selectedTime && appt.employee === userMessage
-          ); */
+          ); 
+          
+         
+
+          ---
+          ---
+          ---
+
+       
+          */
+
+
+    React.useEffect(() => {
+        if (bookedAppointments) {
+            const next = getNextBookedTime(bookedAppointments);
+            setNextBooked(next);
+        }
+    }, [bookedAppointments]);
+
+    const getNextBookedTime = (bookedAppointments = []) => {
+        if (!Array.isArray(bookedAppointments) || bookedAppointments.length === 0) {
+            return null;
+        }
+
+        const sortedAppointments = [...bookedAppointments].sort((a, b) => {
+            return a.time.localeCompare(b.time);
+        });
+
+        return sortedAppointments[0]; // Retorna o objeto inteiro { time, employee }
+    };
 
 
     React.useEffect(() => {
@@ -585,31 +687,33 @@ transition: transform 0.3s;
     }
 
     const fetchBookedAppointments = async () => {
-        const dbRef = ref(database, `${base64.encode(user.email)}/clientes/agendamentos`); // Referência para a coleção 'clientes'
-    
+        const dbRef = ref(database, `${base64.encode(user.email)}/agendamentos`); // Referência para a coleção 'clientes'
+
         // Escuta mudanças em tempo real
         onValue(dbRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 const dataList = Object.keys(data).map((key) => ({
                     id: key,
-            
+
                     fotoUrl: data[key].fotoUrl
                 }));
-    
+
                 setDataClientes(dataList);
-    
-    }})}
-    
+
+            }
+        })
+    }
+
 
     const handleFilterChange = (e) => {
         const value = e.target.value.toLowerCase(); // Converte o valor do filtro para minúsculas
         setFilterValue(value); // Atualiza o valor do filtro
 
-        const filtered = dataClientes.filter((item) =>
+        const filtered = bookedAppointments.filter((item) =>
             item.nome.toLowerCase().includes(value) ||
-            item.dataCadastro.toLowerCase().includes(value) ||
-            item.acabaEm.toLowerCase().includes(value) ||
+            item.employee.toLowerCase().includes(value) ||
+            item.time.toLowerCase().includes(value) ||
             item.doses.toLowerCase().includes(value) ||
             item.remedio.toLowerCase().includes(value)
         );
@@ -641,10 +745,12 @@ transition: transform 0.3s;
         }
     }
 
-    console.log('CLIENTERECOMPRA::::')
+    console.log('Agendamentos::::', nextBooked)
 
 
-
+    if (!user) {
+        navigate('/loading')
+    }
 
     return (
         <>
@@ -673,18 +779,18 @@ transition: transform 0.3s;
 
 
                             ))}
-                  
+
                             <CardT>
                                 <Icon>
                                     <img style={{ width: 30, height: 30 }} alt='icon' src='time-left.png' />
                                 </Icon>
                                 <Info>
                                     <Title>Próximo Horário</Title>
-                                    <Time>14:30</Time>
-                                    {<Details>Antônio Mascia</Details>}
+                                    <Time>{nextBooked?.time}</Time>
+                                    {<Details>{nextBooked?.nome} - {nextBooked?.phone}</Details>}
                                 </Info>
                             </CardT>
-                      
+
                         </ContainerT>
 
                     </ContainerRules>
@@ -695,7 +801,7 @@ transition: transform 0.3s;
                         <Paper sx={{ height: 400, width: '100%', alignSelf: 'flex-start' }}>
                             <DataGrid
 
-                                rows={filteredData}
+                                rows={bookedAppointments}
                                 columns={columns}
                                 initialState={{ pagination: { paginationModel } }}
                                 pageSizeOptions={[10]}
@@ -703,7 +809,8 @@ transition: transform 0.3s;
                                 sx={{ border: 0 }}
                                 onRowSelectionModelChange={handleRowSelection}
                                 disableRowSelectionOnClick={false}
-                                {...filteredData}
+                                getRowId={bookedAppointments.id}
+                                {...bookedAppointments}
                             />
                         </Paper>
                         {
@@ -1188,71 +1295,71 @@ export default Measurement
 
 
 
-        /*
+/*
 
-         React.useEffect(() => {
-        const today = new Date();
-        const month = today.getMonth() + 1;
-        const year = today.getFullYear();
-        const date = today.getDate();
-        const hours = today.getHours();
-        const minutes = today.getMinutes().toString().padStart(2, '0'); // Pads single digit minutes with a zero
-        setDate(`${date}/${month}/${year} ${hours}:${minutes}`);
-    }, []);
-
-
-    React.useEffect(() => {
-        const db = getDatabase()
-        const auth = getAuth();
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // User is signed in, see docs for a list of available properties
-                // https://firebase.google.com/docs/reference/js/auth.user
-                setUser(user)
+ React.useEffect(() => {
+const today = new Date();
+const month = today.getMonth() + 1;
+const year = today.getFullYear();
+const date = today.getDate();
+const hours = today.getHours();
+const minutes = today.getMinutes().toString().padStart(2, '0'); // Pads single digit minutes with a zero
+setDate(`${date}/${month}/${year} ${hours}:${minutes}`);
+}, []);
 
 
-                const dbRef = ref(db, `${base64.encode(user.email)}/assinar`);
-                onValue(dbRef, (snapshot) => {
-                    const data = snapshot.val();
+React.useEffect(() => {
+const db = getDatabase()
+const auth = getAuth();
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // User is signed in, see docs for a list of available properties
+        // https://firebase.google.com/docs/reference/js/auth.user
+        setUser(user)
 
-                    if (data) {
-                        setPaymentState(data)
-                        if (data.id) {
-                            const fetchPaymentLinks = async () => {
-                                try {
-                                    const response = await fetch(`https://backend-nine-gamma-70.vercel.app/payment-link-status/${data.id}`); // URL do backend
 
-                                    if (!response.ok) {
-                                        throw new Error('Erro ao buscar os links de pagamento');
-                                    }
+        const dbRef = ref(db, `${base64.encode(user.email)}/assinar`);
+        onValue(dbRef, (snapshot) => {
+            const data = snapshot.val();
 
-                                    const dataT = await response.json();
-                                    console.log(dataT)
-                                    setPaymentLinks(dataT)
-                                    if (dataT.orders_paid > 0) {
-                                        const databasePath = `${base64.encode(user.email)}/assinar`;
-                                        await set(ref(db, databasePath), {
-                                            id: dataT.id,
-                                            assinatura: true
-                                        }).then(log => {
-                                            console.log('Assinatura paga')
-                                        }).catch(error => console.log(error))
-                                    }
+            if (data) {
+                setPaymentState(data)
+                if (data.id) {
+                    const fetchPaymentLinks = async () => {
+                        try {
+                            const response = await fetch(`https://backend-nine-gamma-70.vercel.app/payment-link-status/${data.id}`); // URL do backend
 
-                                } catch (err) {
-                                    console.log(err)
-                                    setPaymentLinks([]); // Limpa os dados anteriores em caso de erro
-                                }
-                            };
-                            fetchPaymentLinks()
+                            if (!response.ok) {
+                                throw new Error('Erro ao buscar os links de pagamento');
+                            }
+
+                            const dataT = await response.json();
+                            console.log(dataT)
+                            setPaymentLinks(dataT)
+                            if (dataT.orders_paid > 0) {
+                                const databasePath = `${base64.encode(user.email)}/assinar`;
+                                await set(ref(db, databasePath), {
+                                    id: dataT.id,
+                                    assinatura: true
+                                }).then(log => {
+                                    console.log('Assinatura paga')
+                                }).catch(error => console.log(error))
+                            }
+
+                        } catch (err) {
+                            console.log(err)
+                            setPaymentLinks([]); // Limpa os dados anteriores em caso de erro
                         }
-                    }
-
-                })
-                // ...
-            } else {
-                // User is signed out
-                // ...
+                    };
+                    fetchPaymentLinks()
+                }
             }
-        });
-    }, []) */
+
+        })
+        // ...
+    } else {
+        // User is signed out
+        // ...
+    }
+});
+}, []) */

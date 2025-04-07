@@ -93,7 +93,7 @@ const Home = () => {
     };
 
     if(user){
-        navigate('/measure')
+        navigate('/loading')
     }
 
         return (
@@ -128,7 +128,7 @@ const Home = () => {
                                 onChange={text => setSenha(text.target.value)}
 
                             />
-                            <Button style={{ alignSelf: 'center' }} onClick={() => loginfake()} variant="contained">Entrar</Button>
+                            <Button style={{ alignSelf: 'center' }} onClick={() => goMeansure()} variant="contained">Entrar</Button>
 
                             <div style={{ display: 'flex', gap: 7 }} >
                                 <SubTitle   >

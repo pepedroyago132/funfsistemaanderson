@@ -14,13 +14,14 @@ export function getClients() {
 
 }
 
+
 export async function sendMessageAll(body) {
   try {
-    const response = await fetch(`${Globalurl}/instances/3DF2E27C377550AFA39732C54B267657/token/FE864889C299B28B12147400/send-text`, {
+    const response = await fetch(`${Globalurl}/instances/3DF53EC07AF0D01F62ABFA8592F99CB9/token/C80CBD1255FF196EDC3CB4C9/send-text`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
-        'Client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS',
+        'Client-Token': 'F17ab686d48a14e5ab2d713edb6c171aaS',
       },
       body: JSON.stringify(body),
     });
@@ -45,7 +46,7 @@ export function createInstance(body) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
-       'client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS'
+       'client-Token': 'F17ab686d48a14e5ab2d713edb6c171aaS'
     },
     body: JSON.stringify(body)
   })
@@ -60,7 +61,7 @@ export async function lerQRCode(idi, tokeni) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS',
+        'client-Token': 'F17ab686d48a14e5ab2d713edb6c171aaS',
       },
     });
 
@@ -80,7 +81,7 @@ export async function listingInstances(idi, tokeni) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS',
+        'client-Token': 'F17ab686d48a14e5ab2d713edb6c171aaS',
       },
     });
 
@@ -103,7 +104,7 @@ export async function dataInstance(idi, tokeni) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS',
+        'client-Token': 'F17ab686d48a14e5ab2d713edb6c171aaS',
       },
     });
 
@@ -125,7 +126,7 @@ export async function sendImage(bodyImage) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
-        'Client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS',
+        'Client-Token': 'F17ab686d48a14e5ab2d713edb6c171aaS',
       },
       body: JSON.stringify(bodyImage),
     });
@@ -180,7 +181,7 @@ export async function readMessage(idi,tokeni) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
-        'Client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS',
+        'Client-Token': 'F17ab686d48a14e5ab2d713edb6c171aaS',
       },
       body: JSON.stringify(),
     });
@@ -201,8 +202,8 @@ export async function readMessage(idi,tokeni) {
 }
 
 export const atualizarWebhook = async () => {
-  const instancia = '3DF2E27C377550AFA39732C54B267657'; // Substitua pelo ID da sua instância
-  const token = 'FE864889C299B28B12147400'; // Substitua pelo seu token
+  const instancia = '3DF53EC07AF0D01F62ABFA8592F99CB9'; // Substitua pelo ID da sua instância
+  const token = 'C80CBD1255FF196EDC3CB4C9'; // Substitua pelo seu token
   const novaUrlWebhook = 'https://backendpedro.vercel.app/webhook'; // Apontando para a rota correta
 
   try {
@@ -211,7 +212,7 @@ export const atualizarWebhook = async () => {
       { value: novaUrlWebhook }, // Corpo da requisição
       {
         headers: {
-          'Client-Token': 'Fdebf3e36c3324200aa413613db04c3bfS', // Se necessário
+          'Client-Token': 'F17ab686d48a14e5ab2d713edb6c171aaS', // Se necessário
           'Content-Type': 'application/json'
         }
       }

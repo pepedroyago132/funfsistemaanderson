@@ -2,19 +2,13 @@ import * as React from 'react';
 import { PageContainer, SubTitle, FormContainer, Title } from './styles';
 import { useNavigate } from 'react-router-dom';
 import QRCode from "react-qr-code";
-import { getDatabase, ref, set, get, child, onValue } from "firebase/database";
 import Button from '@mui/material/Button';
 import "firebase/database";
-import base64 from 'base-64'
 import { dataInstance, lerQRCode, listingInstances } from '../../services';
 import Header from '../../components/Header';
 
 const QRCodePage = () => {
     const navigate = useNavigate()
-    const [cnpjInput, setCnpjInput] = React.useState('');
-    const [razaoSocial, setRazaoSocial] = React.useState('');
-    const [emailInput, setEmailInput] = React.useState('');
-    const [senhaInput, setSenhaInput] = React.useState('');
     const [connected, setConnected] = React.useState('');
     const [qrCode, setQRCode] = React.useState(false);
 
@@ -39,8 +33,8 @@ const QRCodePage = () => {
         if(connected){
             return window.alert('Conectado')
         }else{
-            const idi = '3DF2E27C377550AFA39732C54B267657';
-            const tokeni = 'FE864889C299B28B12147400';
+            const idi = '3DF53EC07AF0D01F62ABFA8592F99CB9';
+            const tokeni = 'C80CBD1255FF196EDC3CB4C9';
     
             try {
                 const response = await lerQRCode(idi, tokeni); // Aguarda a função retornar o resultado
@@ -54,8 +48,8 @@ const QRCodePage = () => {
     }
 
     async function listingInstacesValue() {
-        const idi = '3DF2E27C377550AFA39732C54B267657';
-        const tokeni = 'FE864889C299B28B12147400';
+        const idi = '3DF53EC07AF0D01F62ABFA8592F99CB9';
+        const tokeni = 'C80CBD1255FF196EDC3CB4C9';
 
         try {
             const response = await listingInstances(); // Aguarda a função retornar o resultado
@@ -66,8 +60,8 @@ const QRCodePage = () => {
     }
 
     async function dataInstanceValue() {
-        const idi = '3DF2E27C377550AFA39732C54B267657';
-        const tokeni = 'FE864889C299B28B12147400';
+        const idi = '3DF53EC07AF0D01F62ABFA8592F99CB9';
+        const tokeni = 'C80CBD1255FF196EDC3CB4C9';
 
         try {
             const response = await dataInstance(idi,tokeni); // Aguarda a função retornar o resultado
