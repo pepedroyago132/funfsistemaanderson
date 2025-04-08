@@ -578,7 +578,7 @@ transition: transform 0.3s;
                 delayMessage: 2
             }
 
-            if (selectedEmployee && selectedTime) {
+            if (selectedEmployee) {
                 const db = getDatabase();
                 set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), { time: selectedTime, employee: selectedEmployee, id: messageDataUser.phone, phone: messageDataUser.phone, nome: messageDataUser.senderName }).then(() => sendMessageAll(body)).catch(() => sendMessageAll(bodyError));
 
