@@ -436,8 +436,8 @@ transition: transform 0.3s;
     }, [])
 
     React.useEffect(() => {
-        const instancia = "3DF53EC07AF0D01F62ABFA8592F99CB9"; // Substitua pelo ID da instância
-        const token = "C80CBD1255FF196EDC3CB4C9"; // Substitua pelo token
+        const instancia = "3DF85F68FCF5A06C6FC54E20A388CB1E"; // Substitua pelo ID da instância
+        const token = "2A3697C85B20EEA9D47FCA97"; // Substitua pelo token
         const novaUrlWebhook = "https://backendpedro.vercel.app/webhook";
 
         const atualizarWebhook = async () => {
@@ -447,7 +447,7 @@ transition: transform 0.3s;
                     {
                         method: "PUT",
                         headers: {
-                            "Client-Token": "F17ab686d48a14e5ab2d713edb6c171aaS",
+                            "Client-Token": "F13df36a5b98f4b6f88d0101ae3b7e34aS",
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({ value: novaUrlWebhook }),
