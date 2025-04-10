@@ -581,33 +581,35 @@ transition: transform 0.3s;
             );
     
             setSelectedEmployee(userMessage);
+
+             if (selectedEmployee) {
+                const body = {
+                    message: `Agendamento Confirmado com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
+                    phone: `+${messageDataUser.phone}`,
+                    delayMessage: 2
+                }
+        
+                const bodyError = {
+                    message: `Instabilidade para agendamentos por WhatsApp no momento com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
+                    phone: `+${messageDataUser.phone}`,
+                    delayMessage: 2
+                }
+        
+                const db = getDatabase();
+                set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), { 
+                    time: selectedTime, 
+                    date: selectedDate, 
+                    employee: selectedEmployee, 
+                    id: messageDataUser.phone, 
+                    phone: messageDataUser.phone, 
+                    nome: messageDataUser.senderName 
+                }).then(() => sendMessageAll(body)).catch(() => sendMessageAll(bodyError));
+            }
     
      
         }
 
-        else if (selectedEmployee) {
-            const body = {
-                message: `Agendamento Confirmado com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
-                phone: `+${messageDataUser.phone}`,
-                delayMessage: 2
-            }
     
-            const bodyError = {
-                message: `Instabilidade para agendamentos por WhatsApp no momento com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
-                phone: `+${messageDataUser.phone}`,
-                delayMessage: 2
-            }
-    
-            const db = getDatabase();
-            set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), { 
-                time: selectedTime, 
-                date: selectedDate, 
-                employee: selectedEmployee, 
-                id: messageDataUser.phone, 
-                phone: messageDataUser.phone, 
-                nome: messageDataUser.senderName 
-            }).then(() => sendMessageAll(body)).catch(() => sendMessageAll(bodyError));
-        }
     
     }, [userMessage]);
     console.log('agendamentos::::::::', bookedAppointments)
