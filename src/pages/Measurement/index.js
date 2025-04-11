@@ -446,7 +446,7 @@ transition: transform 0.3s;
                         }))
                         : [];
                     setBookedAppointments(formatted);
-                    dataInstance()
+                    dataInstanceValue()
                 });
 
                 return () => unsubscribe();
