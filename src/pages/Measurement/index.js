@@ -546,7 +546,7 @@ transition: transform 0.3s;
     React.useEffect(() => {
 
         if (userMessage.toLowerCase() === "agendar") {
-            const timesList = availableTimes.map((time, index) => `${index + 1}. ${time}`).join("\n");
+            const timesList = availableTimes.map((time, index) => `${time}`).join("\n");
             const timesMessage = `Horários disponíveis:\n${timesList}`;
             const body = {
                 message: timesMessage,
