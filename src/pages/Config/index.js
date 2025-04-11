@@ -116,7 +116,7 @@ const Configuracao = () => {
                     <SubTitle>Mensagem Escolhida: {userData.msgCadastro}</SubTitle>
 
 
-                    <TitleForm>Enviado para horário das medicações:</TitleForm>
+                    <TitleForm>Enviado :</TitleForm>
                     <TextField
                         id={`outlined-basic`}
                         label={`Mensagem de lembrete - Horários`}
