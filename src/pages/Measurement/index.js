@@ -595,45 +595,50 @@ transition: transform 0.3s;
             }
         }
     
-        else if (employees.includes(userMessage)) {
+        else if (employees.includes(userMessage) && selectedTime && selectedDate) {
             const isEmployeeAvailable = Array.isArray(bookedAppointments) && !bookedAppointments.some(
                 (appt) => appt.time === selectedTime && appt.date === selectedDate && appt.employee === userMessage
             );
-        
             setSelectedEmployee(userMessage);
-        
-            const body = {
-                message: `Agendamento Confirmado com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
-                phone: `+${messageDataUser.phone}`,
-                delayMessage: 2
-            }
-        
-            const bodyError = {
-                message: `Instabilidade para agendamentos por WhatsApp no momento com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
-                phone: `+${messageDataUser.phone}`,
-                delayMessage: 2
-            }
-        
-            const db = getDatabase();
-            set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), { 
-                time: selectedTime, 
-                date: selectedDate, 
-                employee: userMessage,  // mudou aqui também
-                id: messageDataUser.phone, 
-                phone: messageDataUser.phone, 
-                nome: messageDataUser.senderName 
-            }).then(() => sendMessageAll(body)).catch(() => sendMessageAll(bodyError));
 
-
-                            
+            if (isEmployeeAvailable){
+ 
+                const body = {
+                    message: `Agendamento Confirmado com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
+                    phone: `+${messageDataUser.phone}`,
+                    delayMessage: 2
+                }
+            
+                const bodyError = {
+                    message: `Instabilidade para agendamentos por WhatsApp no momento com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
+                    phone: `+${messageDataUser.phone}`,
+                    delayMessage: 2
+                }
+            
+                const db = getDatabase();
+                set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), { 
+                    time: selectedTime, 
+                    date: selectedDate, 
+                    employee: userMessage,  // mudou aqui também
+                    id: messageDataUser.phone, 
+                    phone: messageDataUser.phone, 
+                    nome: messageDataUser.senderName 
+                }).then(() => sendMessageAll(body)).catch(() => sendMessageAll(bodyError));
+    
+    
+                                
+                             
+                                const post = {
+                                    clientes: relatorio.clientes + 1,
+                                 };
                          
-                            const post = {
-                                clientes: relatorio.clientes + 1,
-                             };
-                     
-                             const updates = {};
-                             updates[`${base64.encode(user.email)}/relatorios`] = post;
-                                update(ref(db), updates).then(log => console.log(log)).catch(log => window.alert(log)) 
+                                 const updates = {};
+                                 updates[`${base64.encode(user.email)}/relatorios`] = post;
+                                    update(ref(db), updates).then(log => console.log(log)).catch(log => window.alert(log)) 
+            }
+        
+           
+       
          
         }
 
