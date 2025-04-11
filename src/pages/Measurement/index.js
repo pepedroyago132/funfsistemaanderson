@@ -553,12 +553,14 @@ transition: transform 0.3s;
                 phone: `+${messageDataUser.phone}`,
                 delayMessage: 2
             }
+
+            setSelectedTime(userMessage);
     
             sendMessageAll(body);
         }
     
         else if (availableTimes.includes(userMessage) && !selectedTime) {
-            setSelectedTime(userMessage);
+      setSelectedDate(userMessage)
     
             const body = {
                 message: `Qual a data desejada? (Digite no formato dd/mm/aaaa)`,
