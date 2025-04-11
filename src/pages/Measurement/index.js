@@ -301,8 +301,8 @@ transition: transform 0.3s;
 
     const data = [
         { title: "Agendamentos Hoje", value: relatorio ? relatorio.clientes : 0, percentage: "+0%" },
-        { title: "Agendamentos atendidos", value: /*dataClientes ? dataClientes.length : 0*/ 15, percentage: "+0%" },
-        { title: "Confirmaram Presença", value:/* `R$ ${relatorio ? relatorio.valorTotalM.toFixed(2).replace('.', ',') : 0}`*/'20', percentage: "+0%" },
+        { title: "Agendamentos atendidos", value: /*dataClientes ? dataClientes.length : 0*/ 0, percentage: "+0%" },
+        { title: "Confirmaram Presença", value:/* `R$ ${relatorio ? relatorio.valorTotalM.toFixed(2).replace('.', ',') : 0}`*/'00', percentage: "+0%" },
 
         { title: "Receita", value: /*`R$ ${valorRecompra ? valorRecompra.valor.toFixed(2).replace('.', ',') : 0}`*/'R$380,00', percentage: "+0%" },
     ];
@@ -595,7 +595,7 @@ transition: transform 0.3s;
             }
         }
     
-        else if (employees.includes(userMessage) && selectedTime && selectedDate) {
+        else if (employees.includes(userMessage)) {
             const isEmployeeAvailable = Array.isArray(bookedAppointments) && !bookedAppointments.some(
                 (appt) => appt.time === selectedTime && appt.date === selectedDate && appt.employee === userMessage
             );
