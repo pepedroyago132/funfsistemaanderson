@@ -560,7 +560,6 @@ transition: transform 0.3s;
         }
     
         else if (availableTimes.includes(userMessage) && !selectedTime) {
-      setSelectedDate(userMessage)
     
             const body = {
                 message: `Qual a data desejada? (Digite no formato dd/mm/aaaa)`,
