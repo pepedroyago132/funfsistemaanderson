@@ -300,7 +300,7 @@ transition: transform 0.3s;
     ];
 
     const data = [
-        { title: "Agendamentos Hoje", value:/* relatorio ? relatorio.clientes : 0*/25, percentage: "+0%" },
+        { title: "Agendamentos Hoje", value: relatorio ? relatorio.clientes : 0, percentage: "+0%" },
         { title: "Agendamentos atendidos", value: /*dataClientes ? dataClientes.length : 0*/ 15, percentage: "+0%" },
         { title: "Confirmaram Presença", value:/* `R$ ${relatorio ? relatorio.valorTotalM.toFixed(2).replace('.', ',') : 0}`*/'20', percentage: "+0%" },
 
@@ -309,6 +309,25 @@ transition: transform 0.3s;
 
     const paginationModel = { page: 0, pageSize: 5 };
 
+
+
+    async function dataInstanceValue() {
+        const idi = '3DF85F68FCF5A06C6FC54E20A388CB1E';  
+        
+        const tokeni = '2A3697C85B20EEA9D47FCA97';
+
+        try {
+            const response = await dataInstance(idi, tokeni); // Aguarda a função retornar o resultado
+            console.log('DATAAQUI:::::::', response)
+            if (response.connected) {
+                setConnectedNumber(true)
+            } else {
+                setConnectedNumber(false)
+            }
+        } catch (error) {
+            console.error('TRYCAYCHERROR:::::QRCODE:::', error); // Lida com erros
+        }
+    }
 
 
     const handleRowSelection = (selectionModel) => {
@@ -427,6 +446,7 @@ transition: transform 0.3s;
                         }))
                         : [];
                     setBookedAppointments(formatted);
+                    dataInstance()
                 });
 
                 return () => unsubscribe();
@@ -603,6 +623,18 @@ transition: transform 0.3s;
                 phone: messageDataUser.phone, 
                 nome: messageDataUser.senderName 
             }).then(() => sendMessageAll(body)).catch(() => sendMessageAll(bodyError));
+
+
+                            
+                         
+                            const post = {
+                                clientes: relatorio.clientes + 1,
+                             };
+                     
+                             const updates = {};
+                             updates[`${base64.encode(user.email)}/relatorios`] = post;
+                                update(ref(db), updates).then(log => console.log(log)).catch(log => window.alert(log)) 
+         
         }
 
     
@@ -661,7 +693,7 @@ transition: transform 0.3s;
         });
 
 
-        get(child(dbRef, `${base64.encode(user.email)}/relatorios/clientes`)).then((snapshot) => {
+        get(child(dbRef, `${base64.encode(user.email)}/relatorios`)).then((snapshot) => {
             if (snapshot.exists()) {
                 setRelatorio(snapshot.val())
             } else {
