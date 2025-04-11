@@ -20,7 +20,7 @@ import { getDatabase, ref, set, get, child, onValue, update } from "firebase/dat
 import { database } from '../../App';
 import { Buffer } from 'buffer'
 
-const pages = ['Dashboard', 'Validar QRCode'];
+const pages = ['Dashboard', 'Validar QRCode','Configurar Mensagens'];
 const settings = ['Perfil','Sair'];
 
 const base64 = {
@@ -56,7 +56,7 @@ const Header = () => {
           navigate('/qrcode')
         } else if (page == 'Dashboard' ){
             navigate('/measure')
-        }else if (page == 'Editar Mensagens' ){
+        }else if (page == 'Configurar Mensagens' ){
             navigate('/config')
         }else if (page == 'Editar Clientes' ){
             navigate('/clientes')
