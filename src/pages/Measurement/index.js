@@ -527,13 +527,12 @@ transition: transform 0.3s;
         return () => clearInterval(interval);
     }, []);
 
-    console.log(messageDataUser)
 
 
 
 
 
-    console.log('EMAILUSUARIO:::::::::', user.email)
+    console.log('MESSAGEDATA:::::::::',messageDataUser)
     React.useEffect(() => {
         if (bookedAppointments) {
             const freeTimes = workHours.filter((time) => {
@@ -554,7 +553,7 @@ transition: transform 0.3s;
    React.useEffect(() => {
     if (userMessage.toLowerCase() === "agendar") {
         const bodyT = {
-            phone: messageDataUser.senderPhone,
+            phone:`+${messageDataUser.phone}`,
             message: "Olá tudo bom aqui é do(a) ${ESTABELECIMENTO}, vejo que quer *agendar um horário*, você deseja *Agendar Agora* ou prefere *Falar com um Atendente*?",
             buttonList: {
                 buttons: [
