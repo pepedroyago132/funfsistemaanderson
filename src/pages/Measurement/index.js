@@ -554,7 +554,7 @@ transition: transform 0.3s;
    React.useEffect(() => {
     if (userMessage.toLowerCase() === "agendar") {
         const bodyT = {
-            phone: "5511999999999",
+            phone: messageDataUser.phone,
             message: "Olá tudo bom aqui é do(a) ${ESTABELECIMENTO}, vejo que quer *agendar um horário*, você deseja *Agendar Agora* ou prefere *Falar com um Atendente*?",
             buttonList: {
                 buttons: [
