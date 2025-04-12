@@ -299,6 +299,14 @@ transition: transform 0.3s;
 
     ];
 
+
+    const services = [
+        { nome: "Corte de Cabelo", preco: "R$30" },
+        { nome: "Barba", preco: "R$20" },
+        { nome: "Corte + Barba", preco: "R$45" }
+      ];
+
+
     const data = [
         { title: "Agendamentos Hoje", value: relatorio ? relatorio.clientes : 0, percentage: "+0%" },
         { title: "Agendamentos atendidos", value: /*dataClientes ? dataClientes.length : 0*/ 0, percentage: "+0%" },
@@ -543,109 +551,144 @@ transition: transform 0.3s;
     }, [bookedAppointments]);
 
 
-    React.useEffect(() => {
+   React.useEffect(() => {
+    if (userMessage.toLowerCase() === "agendar") {
+        const bodyT = {
+            phone: "5511999999999",
+            message: "Olá tudo bom aqui é do(a) ${ESTABELECIMENTO}, vejo que quer *agendar um horário*, você deseja *Agendar Agora* ou prefere *Falar com um Atendente*?",
+            buttonList: {
+                buttons: [
+                    { id: "1", label: "Agendar Agora" },
+                    { id: "2", label: "Falar com Atendente" }
+                ]
+            }
+        };
 
-        if (userMessage.toLowerCase() === "agendar") {
-            const timesList = availableTimes.map((time, index) => `${time}`).join("\n");
-            const timesMessage = `Horários disponíveis:\n${timesList}`;
+        sendMessageAll(bodyT);
+    }
+
+    else if (userMessage.toLowerCase() === "agendar agora") {
+        const body = {
+            message: `Qual a data desejada? (Digite no formato dia/mês: *Ex: 22/04*)`,
+            phone: `+${messageDataUser.phone}`,
+            delayMessage: 2
+        };
+        sendMessageAll(body);
+    }
+
+    else if (!selectedDate && /^\d{2}\/\d{2}$/.test(userMessage)) {
+        setSelectedDate(userMessage);
+    
+        const buttons = availableTimes.map((time, index) => ({
+            id: `${index + 1}`,
+            label: time
+        }));
+    
+        const body = {
+            phone: `+${messageDataUser.phone}`,
+            message: "Escolha um horário disponível abaixo para agendar:",
+            buttonList: {
+                buttons: buttons
+            },
+            delayMessage: 2
+        };
+    
+        sendMessageAll(body);
+    }
+
+    else if (availableTimes.includes(userMessage) && selectedDate && !selectedTime) {
+        setSelectedTime(userMessage);
+
+        // Enviar os serviços após escolher o horário
+        const services = [
+            { nome: "Corte de Cabelo", preco: "R$30" },
+            { nome: "Barba", preco: "R$20" },
+            { nome: "Corte + Barba", preco: "R$45" }
+        ];
+
+        const serviceButtons = services.map((servico, index) => ({
+            id: `${index + 1}`,
+            label: `${servico.nome} - ${servico.preco}`
+        }));
+
+        const serviceBody = {
+            phone: `+${messageDataUser.phone}`,
+            message: "Escolha um dos serviços disponíveis abaixo:",
+            buttonList: {
+                buttons: serviceButtons
+            },
+            delayMessage: 2
+        };
+
+        sendMessageAll(serviceBody);
+    }
+
+    else if (selectedTime && selectedDate && !selectedEmployee && employees.includes(userMessage)) {
+        const isEmployeeAvailable = Array.isArray(bookedAppointments) && !bookedAppointments.some(
+            (appt) => appt.time === selectedTime && appt.date === selectedDate && appt.employee === userMessage
+        );
+        setSelectedEmployee(userMessage);
+
+        if (isEmployeeAvailable) {
             const body = {
-                message: timesMessage,
+                message: `Agendamento Confirmado com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
                 phone: `+${messageDataUser.phone}`,
                 delayMessage: 2
-            }
+            };
 
-           
-    
-            sendMessageAll(body);
-        }
-    
-        else if (availableTimes.includes(userMessage) && !selectedDate) {
-            setSelectedTime(userMessage);
-            const body = {
-                message: `Qual a data desejada? (Digite no formato dd/mm/aaaa)`,
+            const bodyError = {
+                message: `Instabilidade para agendamentos por WhatsApp no momento com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
                 phone: `+${messageDataUser.phone}`,
                 delayMessage: 2
-            }
-    
+            };
+
+            const db = getDatabase();
+            set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), {
+                time: selectedTime,
+                date: selectedDate,
+                employee: userMessage,
+                id: messageDataUser.phone,
+                phone: messageDataUser.phone,
+                nome: messageDataUser.senderName
+            }).then(() => sendMessageAll(body)).catch(() => sendMessageAll(bodyError));
+
+            const post = {
+                clientes: relatorio.clientes + 1,
+            };
+
+            const updates = {};
+            updates[`${base64.encode(user.email)}/relatorios`] = post;
+            update(ref(db), updates).then(log => console.log(log)).catch(log => window.alert(log));
+        }
+    }
+
+    // Exibir funcionários depois da escolha do serviço
+    else if (selectedTime && selectedDate && !employees.includes(userMessage) && userMessage.includes(" - R$")) {
+        const availableEmployees = employees.filter(
+            (emp) =>
+                Array.isArray(bookedAppointments) &&
+                !bookedAppointments.some(
+                    (appt) => appt.time === selectedTime && appt.date === selectedDate && appt.employee === emp
+                )
+        );
+
+        if (availableEmployees.length > 0) {
+            const employeesList = availableEmployees
+                .map((emp, index) => `${index + 1}. ${emp}`)
+                .join("\n");
+
+            const body = {
+                message: `Funcionários disponíveis para ${selectedTime} no dia ${selectedDate}:\n${employeesList}`,
+                phone: `+${messageDataUser.phone}`,
+                delayMessage: 2,
+            };
+
             sendMessageAll(body);
         }
-    
-        else if (selectedTime && !selectedDate && /^\d{2}\/\d{2}\/\d{4}$/.test(userMessage)) {
-            setSelectedDate(userMessage);
-    
-            const availableEmployees = employees.filter(
-                (emp) =>
-                    Array.isArray(bookedAppointments) &&
-                    !bookedAppointments.some(
-                        (appt) => appt.time === selectedTime && appt.date === userMessage && appt.employee === emp
-                    )
-            );
-    
-            if (availableEmployees.length > 0) {
-                const employeesList = availableEmployees
-                    .map((emp, index) => `${index + 1}. ${emp}`)
-                    .join("\n");
-    
-                const body = {
-                    message: `Funcionários disponíveis para ${selectedTime} no dia ${userMessage}:\n${employeesList}`,
-                    phone: `+${messageDataUser.phone}`,
-                    delayMessage: 2,
-                };
-    
-                sendMessageAll(body);
-            }
-        }
-    
-        else if (employees.includes(userMessage) && selectedTime && selectedDate) {
-            const isEmployeeAvailable = Array.isArray(bookedAppointments) && !bookedAppointments.some(
-                (appt) => appt.time === selectedTime && appt.date === selectedDate && appt.employee === userMessage
-            );
-            setSelectedEmployee(userMessage);
+    }
 
-            if (isEmployeeAvailable){
- 
-                const body = {
-                    message: `Agendamento Confirmado com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
-                    phone: `+${messageDataUser.phone}`,
-                    delayMessage: 2
-                }
-            
-                const bodyError = {
-                    message: `Instabilidade para agendamentos por WhatsApp no momento com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
-                    phone: `+${messageDataUser.phone}`,
-                    delayMessage: 2
-                }
-            
-                const db = getDatabase();
-                set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), { 
-                    time: selectedTime, 
-                    date: selectedDate, 
-                    employee: userMessage,  // mudou aqui também
-                    id: messageDataUser.phone, 
-                    phone: messageDataUser.phone, 
-                    nome: messageDataUser.senderName 
-                }).then(() => sendMessageAll(body)).catch(() => sendMessageAll(bodyError));
-    
-    
-                                
-                             
-                                const post = {
-                                    clientes: relatorio.clientes + 1,
-                                 };
-                         
-                                 const updates = {};
-                                 updates[`${base64.encode(user.email)}/relatorios`] = post;
-                                    update(ref(db), updates).then(log => console.log(log)).catch(log => window.alert(log)) 
-            }
-        
-           
-       
-         
-        }
+}, [userMessage]);
 
-    
-    
-    }, [userMessage]);
     console.log('agendamentos::::::::', bookedAppointments)
 
 

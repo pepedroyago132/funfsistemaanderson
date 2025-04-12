@@ -41,6 +41,34 @@ export async function sendMessageAll(body) {
   }
 }
 
+
+export async function sendMessageWitchButton(body) {
+  try {
+    const response = await fetch(`${Globalurl}/instances/3DF85F68FCF5A06C6FC54E20A388CB1E/token/2A3697C85B20EEA9D47FCA97/send-button-list`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
+        'Client-Token': 'F13df36a5b98f4b6f88d0101ae3b7e34aS',
+      },
+      body: JSON.stringify(body),
+    });
+
+    // Verifica se a resposta está OK
+    if (!response.ok) {
+      throw new Error(`Erro na requisição: ${response.status} - ${response.statusText}`);
+    }
+
+    const result = await response.json(); // Aguarda a conversão para JSON
+    console.log('Success:', result);
+
+    return result; // Retorna o resultado, se necessário
+  } catch (error) {
+    console.error('Error:', error);
+    throw error; // Relança o erro, se você quiser tratá-lo fora dessa função
+  }
+}
+
+
 export function createInstance(body) {
   fetch(`https://api.z-api.io/instances/integrator/on-demand`, {
     method: 'POST',
