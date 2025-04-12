@@ -17,7 +17,7 @@ import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
-import { atualizarWebhook, sendImage, sendMessageAll, setNewClient } from '../../services';
+import { atualizarWebhook, sendImage, sendMessageAll, sendMessageWitchButton, setNewClient } from '../../services';
 import base64 from 'base-64';
 import { getDatabase, ref, set, push, get, child, onValue, update } from "firebase/database";
 import { database } from '../../App';
@@ -564,7 +564,7 @@ transition: transform 0.3s;
             }
         };
 
-        sendMessageAll(bodyT);
+        sendMessageWitchButton(bodyT);
     }
 
     else if (userMessage.toLowerCase() === "agendar agora") {
@@ -593,7 +593,7 @@ transition: transform 0.3s;
             delayMessage: 2
         };
     
-        sendMessageAll(body);
+        sendMessageWitchButton(body);
     }
 
     else if (availableTimes.includes(userMessage) && selectedDate && !selectedTime) {
@@ -620,7 +620,7 @@ transition: transform 0.3s;
             delayMessage: 2
         };
 
-        sendMessageAll(serviceBody);
+        sendMessageWitchButton(serviceBody);
     }
 
     else if (selectedTime && selectedDate && !selectedEmployee && employees.includes(userMessage)) {
