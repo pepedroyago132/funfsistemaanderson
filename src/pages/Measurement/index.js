@@ -56,7 +56,14 @@ const style = {
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
-};
+  
+    // Responsivo com breakpoints do MUI
+    '@media (max-width:600px)': {
+      width: '90%',
+      height: 'auto',
+      p: 2,
+    },
+  };
 
 const styleModalRegister = {
     maxHeight: '100vh',
@@ -97,7 +104,8 @@ const styleModalList = {
 
 
 const actions = [
-    { icon: <AccountBoxOutlined style={{ color: '#42adda', backgroundColor: '#42adda' }} />, name: 'Cadastrar Lanche' },
+    { icon: <AccountBoxOutlined style={{ color: '#42adda', backgroundColor: '#42adda' }} />, name: 'Cadastrar Funcionário' },
+    { icon: <AccountBoxOutlined style={{ color: '#42adda', backgroundColor: '#42adda' }} />, name: 'Cadastrar Serviços' },
 
 ];
 
@@ -133,7 +141,7 @@ const Measurement = () => {
     const [novaData, setNovaData] = React.useState(null);
     const [clientForTime, setClientforTime] = React.useState([{ clientes: [] }]);
     const [connectednumber, setConnectedNumber] = React.useState(false);
-    const [userData, setUserData] = React.useState({ msgCadastro: '', msgHorario: '' });
+    const [userData, setUserData] = React.useState({funcionarios:[]});
     const listRef = React.useRef(null);
     const [paymentState, setPaymentState] = React.useState({ assinatura: false });
     const [dataRowRecompra, setDataRowRecompra] = React.useState('');
@@ -153,6 +161,13 @@ const Measurement = () => {
     const [userMessage, setUserMessage] = React.useState("");
     const [nextBooked, setNextBooked] = React.useState(null);
     const [selectedDate, setSelectedDate] = React.useState(null);
+    const [userState, setUserState] = React.useState();
+    const [proxAgendar, setProxAgendar] = React.useState(false);
+    const [servicoSelecionado, setServicoSelecionado] = React.useState(false);
+    const [availableEmployeesa, setAvailableEmployees] = React.useState([]);
+    const [cargoFuncionario, setCargoFuncionario] = React.useState('');
+    const [nomeFuncionario, setNomeFuncionario] = React.useState('');
+    const [etapaConfirm, setEtapaConfirm] = React.useState(false);
 
 
 
@@ -320,9 +335,9 @@ transition: transform 0.3s;
 
 
     async function dataInstanceValue() {
-        const idi = '3DF85F68FCF5A06C6FC54E20A388CB1E';  
+        const idi = '3DFAEF678335D000361B4E20A388CB1E';  
         
-        const tokeni = '2A3697C85B20EEA9D47FCA97';
+        const tokeni = '1BDC7D7E3A4F340F43C450FD';
 
         try {
             const response = await dataInstance(idi, tokeni); // Aguarda a função retornar o resultado
@@ -453,10 +468,18 @@ transition: transform 0.3s;
                             nome: appt.nome
                         }))
                         : [];
-                    setBookedAppointments(formatted);
-                    dataInstanceValue()
+                        setBookedAppointments(formatted);
                 });
 
+         
+                const appointments = ref(db, `${base64.encode(user.email)}`);
+
+                   onValue(appointments, (snapshot) => {
+                          setUserData(snapshot.val())
+                      
+                });
+            
+                dataInstanceValue()
                 return () => unsubscribe();
             }
         }
@@ -465,8 +488,8 @@ transition: transform 0.3s;
     }, [])
 
     React.useEffect(() => {
-        const instancia = "3DF85F68FCF5A06C6FC54E20A388CB1E"; // Substitua pelo ID da instância
-        const token = "2A3697C85B20EEA9D47FCA97"; // Substitua pelo token
+        const instancia = "3DFAEF678335D000361B4E20A388CB1E"; // Substitua pelo ID da instância
+        const token = "1BDC7D7E3A4F340F43C450FD"; // Substitua pelo token
         const novaUrlWebhook = "https://backendpedro.vercel.app/webhook";
 
         const atualizarWebhook = async () => {
@@ -476,7 +499,7 @@ transition: transform 0.3s;
                     {
                         method: "PUT",
                         headers: {
-                            "Client-Token": "F13df36a5b98f4b6f88d0101ae3b7e34aS",
+                            "Client-Token": "F2af3f114069741f7ba807e72181650e9S",
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({ value: novaUrlWebhook }),
@@ -495,6 +518,38 @@ transition: transform 0.3s;
         return () => clearInterval(interval);
     }, []);
 
+    console.log('USERDATA::::::::',userData)
+
+    React.useEffect(() => {
+        const atualizar = async () => {
+            try {
+                const response = await fetch('https://backendpedro.vercel.app/dadosChat', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                if (!response.ok) {
+                    throw new Error(`Erro: ${response.status} - ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                setMessageDataUser(result)
+                setUserMessage(result.text.message)
+            } catch (error) {
+                console.error('Erro ao buscar dados:', error);
+            }
+        };
+
+
+
+        const interval = setInterval(() => {
+            atualizar();
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     React.useEffect(() => {
         const atualizar = async () => {
@@ -529,164 +584,218 @@ transition: transform 0.3s;
 
 
 
-
-
-
-    console.log('MESSAGEDATA:::::::::',messageDataUser)
     React.useEffect(() => {
-        if (bookedAppointments) {
-            const freeTimes = workHours.filter((time) => {
-                const availableEmployees = employees.filter(
-                    (emp) =>
-                        !bookedAppointments.some(
-                            (appt) => appt.time === time && appt.employee === emp
-                        )
-                );
-                return availableEmployees.length > 0;
+        if (bookedAppointments && Object.keys(userData.funcionarios || {}).length > 0) {
+            const updatedAvailableTimes = workHours.filter((time) => {
+                // Verifica se há pelo menos um funcionário livre no horário
+                const hasFreeEmployee = Object.entries(userData.funcionarios).some(([empKey, empData]) => {
+                    return !bookedAppointments.some(
+                        (appt) => appt.time === time && appt.employee === empKey
+                    );
+                });
+                return hasFreeEmployee;
             });
-
-            setAvailableTimes(freeTimes);
-        } else return null;
-    }, [bookedAppointments]);
-
-
-   React.useEffect(() => {
-    if (userMessage.toLowerCase() === "agendar") {
-        const bodyT = {
-            phone:`+${messageDataUser.phone}`,
-            message: "Olá tudo bom aqui é do(a) ${ESTABELECIMENTO}, vejo que quer *agendar um horário*, você deseja *Agendar Agora* ou prefere *Falar com um Atendente*?",
-            buttonList: {
-                buttons: [
-                    { id: "1", label: "Agendar Agora" },
-                    { id: "2", label: "Falar com Atendente" }
-                ]
-            }
-        };
-
-        sendMessageWitchButton(bodyT);
-    }
-
-    else if (userMessage.toLowerCase() === "agendar agora") {
-        const body = {
-            message: `Qual a data desejada? (Digite no formato dia/mês: *Ex: 22/04*)`,
-            phone: `+${messageDataUser.phone}`,
-            delayMessage: 2
-        };
-        sendMessageAll(body);
-    }
-
-    else if (!selectedDate && /^\d{2}\/\d{2}$/.test(userMessage)) {
-        setSelectedDate(userMessage);
     
-        const buttons = availableTimes.map((time, index) => ({
-            id: `${index + 1}`,
-            label: time
-        }));
+            setAvailableTimes(updatedAvailableTimes);
     
-        const body = {
-            phone: `+${messageDataUser.phone}`,
-            message: "Escolha um horário disponível abaixo para agendar:",
-            buttonList: {
-                buttons: buttons
-            },
-            delayMessage: 2
-        };
-    
-        sendMessageWitchButton(body);
-    }
-
-    else if (availableTimes.includes(userMessage) && selectedDate && !selectedTime) {
-        setSelectedTime(userMessage);
-
-        // Enviar os serviços após escolher o horário
-        const services = [
-            { nome: "Corte de Cabelo", preco: "R$30" },
-            { nome: "Barba", preco: "R$20" },
-            { nome: "Corte + Barba", preco: "R$45" }
-        ];
-
-        const serviceButtons = services.map((servico, index) => ({
-            id: `${index + 1}`,
-            label: `${servico.nome} - ${servico.preco}`
-        }));
-
-        const serviceBody = {
-            phone: `+${messageDataUser.phone}`,
-            message: "Escolha um dos serviços disponíveis abaixo:",
-            buttonList: {
-                buttons: serviceButtons
-            },
-            delayMessage: 2
-        };
-
-        sendMessageWitchButton(serviceBody);
-    }
-
-    else if (selectedTime && selectedDate && !selectedEmployee && employees.includes(userMessage)) {
-        const isEmployeeAvailable = Array.isArray(bookedAppointments) && !bookedAppointments.some(
-            (appt) => appt.time === selectedTime && appt.date === selectedDate && appt.employee === userMessage
-        );
-        setSelectedEmployee(userMessage);
-
-        if (isEmployeeAvailable) {
-            const body = {
-                message: `Agendamento Confirmado com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
-                phone: `+${messageDataUser.phone}`,
-                delayMessage: 2
-            };
-
-            const bodyError = {
-                message: `Instabilidade para agendamentos por WhatsApp no momento com ${userMessage} às ${selectedTime} no dia ${selectedDate}`,
-                phone: `+${messageDataUser.phone}`,
-                delayMessage: 2
-            };
-
-            const db = getDatabase();
-            set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), {
-                time: selectedTime,
-                date: selectedDate,
-                employee: userMessage,
-                id: messageDataUser.phone,
-                phone: messageDataUser.phone,
-                nome: messageDataUser.senderName
-            }).then(() => sendMessageAll(body)).catch(() => sendMessageAll(bodyError));
-
-            const post = {
-                clientes: relatorio.clientes + 1,
-            };
-
-            const updates = {};
-            updates[`${base64.encode(user.email)}/relatorios`] = post;
-            update(ref(db), updates).then(log => console.log(log)).catch(log => window.alert(log));
-        }
-    }
-
-    // Exibir funcionários depois da escolha do serviço
-    else if (selectedTime && selectedDate && !employees.includes(userMessage) && userMessage.includes(" - R$")) {
-        const availableEmployees = employees.filter(
-            (emp) =>
-                Array.isArray(bookedAppointments) &&
-                !bookedAppointments.some(
-                    (appt) => appt.time === selectedTime && appt.date === selectedDate && appt.employee === emp
+            const filteredEmployees = Object.entries(userData.funcionarios)
+                .filter(([empKey, empData]) =>
+                    updatedAvailableTimes.some((time) =>
+                        !bookedAppointments.some(
+                            (appt) => appt.time === time && appt.employee === empKey
+                        )
+                    )
                 )
-        );
+                .map(([empKey, empData]) => ({
+                    key: empKey,
+                    nome: empData.nome,
+                    cargo: empData.cargo
+                }));
+    
+            setAvailableEmployees(filteredEmployees);
+    
+            // Logs de debug
+            console.log("📋 Agendamentos:", bookedAppointments);
+            console.log("🕒 Horários disponíveis:", updatedAvailableTimes);
+            console.log("👥 Funcionários disponíveis:", filteredEmployees);
+            console.log("⚙️ workHours:", workHours);
+            console.log("🧑 Funcionários:", userData.funcionarios);
+        }
+    }, [bookedAppointments, userData, workHours]);
+    
 
-        if (availableEmployees.length > 0) {
-            const employeesList = availableEmployees
-                .map((emp, index) => `${index + 1}. ${emp}`)
-                .join("\n");
 
-            const body = {
-                message: `Funcionários disponíveis para ${selectedTime} no dia ${selectedDate}:\n${employeesList}`,
-                phone: `+${messageDataUser.phone}`,
-                delayMessage: 2,
+    React.useEffect(() => {
+   
+        if (userMessage.toLowerCase() === "agendar") {
+            const bodyT = {
+                phone: `556199273537`,
+                message: "Olá tudo bom aqui é do(a) ESTABELECIMENTO, caso queira *Agendar Agora*, digite *1*, caso queira *Falar com Atendente* digite *2*?",
+                delayMessage: 2
             };
+    
+            sendMessageAll(bodyT);
 
+        }
+    
+        else if (userMessage.toLowerCase() === "1" && !selectedDate) {
+            const body = {
+                message: `Qual a data desejada? (Digite no formato dia/mês: *Ex: 22/04*)`,
+                phone: `+${messageDataUser.phone}`,
+                delayMessage: 2
+            };
+            sendMessageAll(body);
+        
+        }
+    
+        else if (!selectedDate && /^\d{2}\/\d{2}$/.test(userMessage)) {
+            setSelectedDate(userMessage);
+    
+            const timeList = availableTimes
+                .map((time) => `${time}`)
+                .join("\n");
+    
+            const body = {
+                message: `Horários disponíveis para ${userMessage}:\n\n${timeList}\n\n*Digite o horário desejado.*`,
+                phone: `${messageDataUser.phone}`,
+                delayMessage: 2
+            };
+    
             sendMessageAll(body);
         }
-    }
+    
+        else if (selectedDate && !selectedTime) {
+            setSelectedTime(userMessage);
+    
+            // Enviar os serviços após escolher o horário
+            const services = [
+                { id: 1, nome: "Corte de Cabelo", preco: "R$30" },
+                { id: 2, nome: "Barba", preco: "R$20" },
+                { id: 3, nome: "Corte + Barba", preco: "R$45" }
+            ];
+    
+            const serviceList = services
+                .map((servico, index) => `${index + 1}. ${servico.nome} - ${servico.preco}`)
+                .join("\n");
+    
+            const serviceBody = {
+                phone: `+${messageDataUser.phone}`,
+                message: `Escolha um dos serviços disponíveis abaixo:\n\n${serviceList}\n\n*Digite o número do serviço desejado.*`,
+                delayMessage: 2
+            };
+    
+            sendMessageAll(serviceBody)
+        }
+    
+        // Usuário escolheu um serviço pelo índice
+        else if (selectedTime && selectedDate && !servicoSelecionado &&/^\d+$/.test(userMessage) ) {
+            const services = [
+                { id: 1, nome: "Corte de Cabelo", preco: "R$30" },
+                { id: 2, nome: "Barba", preco: "R$20" },
+                { id: 3, nome: "Corte + Barba", preco: "R$45" }
+            ];
+    
+            const serviceIndex = parseInt(userMessage) - 1;
+            const selectedService = services[serviceIndex];
+           setServicoSelecionado(selectedService)
+    
+            if (selectedService) {
+                const availableEmployees = Object.keys(userData.funcionarios).filter(
+                    (emp) =>
+                        Array.isArray(bookedAppointments) &&
+                        !bookedAppointments.some(
+                            (appt) =>
+                                appt.time === selectedTime &&
 
-}, [userMessage]);
+                                appt.employee === emp
+                        )
+                );
+    
+                if (availableEmployees.length > 0) {
+                    const employeesList = availableEmployeesa
+                        .map((emp, index) => `${index + 1}. ${emp.nome}`)
+                        .join("\n");
+    
+                    const employeeBody = {
+                        phone: `+${messageDataUser.phone}`,
+                        message: `Funcionários disponíveis para ${selectedTime} no dia ${selectedDate}:\n\n${employeesList}\n\n*Digite o número correspondente ao funcionário desejado.*`,
+                        delayMessage: 2
+                    };
+    
+                    sendMessageAll(employeeBody);
+                    setEtapaConfirm(true)
+    
+              
+              
+                } 
+           
+            }
+        } else if (selectedEmployee){
+            console.log('EMPLYEEESELEICOADOOO')
+          }
+          
+    
+    
+    }, [userMessage]);
+
+
+
+    React.useEffect(() => {
+        if (selectedTime && selectedDate && servicoSelecionado && /^\d+$/.test(userMessage) ) {
+            const index = parseInt(userMessage) - 1;
+            const selectedFunc = availableEmployeesa[index];
+        
+    
+                setSelectedEmployee(selectedFunc.nome);
+        
+                const body = {
+                    message: `✅ Agendamento Confirmado com ${selectedFunc.nome} às ${selectedTime} no dia ${selectedDate}.`,
+                    phone: `+${messageDataUser.phone}`,
+                    delayMessage: 2
+                };
+        
+                const bodyError = {
+                    message: `❌ Instabilidade para agendamentos com ${selectedFunc.nome} às ${selectedTime} no dia ${selectedDate}.`,
+                    phone: `+${messageDataUser.phone}`,
+                    delayMessage: 2
+                };
+        
+                const db = getDatabase();
+                set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), {
+                    time: selectedTime,
+                    date: selectedDate,
+                    employee: selectedFunc.nome,
+                    id: messageDataUser.phone,
+                    phone: messageDataUser.phone,
+                    nome: messageDataUser.senderName,
+                    servico: servicoSelecionado?.nome ?? ""
+                })
+                .then(() => sendMessageAll(body))
+                .catch(() => sendMessageAll(bodyError));
+        
+                const post = {
+                    clientes: relatorio.clientes + 1,
+                };
+        
+                const updates = {};
+                updates[`${base64.encode(user.email)}/relatorios`] = post;
+                update(ref(db), updates).catch(console.error);
+        
+                setEtapaConfirm(false);
+                setProxAgendar(false);
+                setSelectedDate(false);
+                setEtapaConfirm(true);
+           
+         
+        } else if (selectedEmployee){
+          console.log('EMPLYEEESELEICOADOOO')
+        }
+        
+    }, [userMessage]);
+    
+
+
+    
 
     console.log('agendamentos::::::::', bookedAppointments)
 
@@ -756,34 +865,24 @@ transition: transform 0.3s;
 
     const handleChangeMenu = (event) => {
 
-        if (event == 'Cadastrar Lanche') {
-            navigate('/registerClient')
-        } else if (event == 'Ver Todos') {
-            handleOpenList()
+        if (event == 'Cadastrar Funcionário') {
+            handleOpen()
+        } else if (event == 'Cadastrar Serviços') {
+           
         }
 
 
     };
 
 
-    async function sendAll() {
-        try {
-
-            filteredData.map(item => {
-                const body = {
-                    message: messageAll,
-                    phone: `55${item.contato}`,
-                    delayMessage: 2
-                }
-
-                sendMessageAll(body)
-
-            })
-        } catch (error) {
-            window.alert('Erro interno ao enviar')
-        }
-
-
+    async function registerFuncionario() {
+        const db = getDatabase();
+            set(ref(db, `${base64.encode(user.email)}/funcionarios/${base64.encode(nomeFuncionario+cargoFuncionario)}`), {
+               nome:nomeFuncionario,
+               cargo:cargoFuncionario
+            }).then(() =>   handleClose()).catch(() => sendMessageAll(bodyError));
+    
+        
     }
 
     const fetchBookedAppointments = async () => {
@@ -946,7 +1045,7 @@ transition: transform 0.3s;
 
                     <SpeedDial
                         ariaLabel="SpeedDial basic example"
-                        sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                        sx={{ position: 'absolute', bottom: 25, right: 25 }}
                         icon={<SpeedDialIcon />}
 
                     >
@@ -979,24 +1078,22 @@ transition: transform 0.3s;
             >
                 <Box sx={style}>
                     <div style={{ display: 'flex', flexDirection: 'row', gap: 7 }} >
-                        <Typography id="modal-modal-title" variant="h6" style={{ fontWeight: 'bold', fontSize: 16 }} >
-                            Enviar para:
+                        <Typography id="modal-modal-title" variant="h3" style={{ fontWeight: 'bold', fontSize: 20 }} >
+                           Cadastrar Funcionário:
                         </Typography>
-                        {
-                            filteredData.map((response) => (
-
-                                <Typography id="modal-modal-title" style={{ fontWeight: '500', fontSize: 18, color: "" }} >
-                                    {response.nome},
-                                </Typography>
-
-                            ))
-
-
-                        }
+                        
                     </div>
-                    <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={messageAll} label="Enviar para todos" onChange={text => setMessageAll(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
+                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', fontSize: 16 }} >
+                           Nome:
+                        </Typography>
+                    <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={nomeFuncionario} label="Insira um nome...." onChange={text => setNomeFuncionario(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
 
-                    <Button style={{ marginTop: 10 }} variant='contained' fullWidth onClick={() => sendAll()}>Enviar</Button>
+                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', fontSize: 16 }} >
+                           Cargo:
+                        </Typography>
+                    <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={cargoFuncionario} label="insira um cargo..." onChange={text => setCargoFuncionario(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
+
+                    <Button style={{ marginTop: 10 }} variant='contained' fullWidth onClick={() => registerFuncionario()}>Cadastrar</Button>
 
 
                 </Box>
