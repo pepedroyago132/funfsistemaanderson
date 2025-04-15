@@ -19,7 +19,7 @@ import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
 import { atualizarWebhook, sendImage, sendMessageAll, sendMessageWitchButton, setNewClient } from '../../services';
 import base64 from 'base-64';
-import { getDatabase, ref, set, push, get, child, onValue, update } from "firebase/database";
+import { getDatabase, ref, set, push, get, child, onValue, update, remove } from "firebase/database";
 import { database } from '../../App';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
@@ -46,24 +46,25 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
 const style = {
-    height: 270,
+    minHeight: 300,
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 400,
+    minWidth: 500,
     bgcolor: 'background.paper',
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
-  
+    gap: 10,
+
     // Responsivo com breakpoints do MUI
     '@media (max-width:600px)': {
-      width: '90%',
-      height: 'auto',
-      p: 2,
+        width: '90%',
+        height: 'auto',
+        p: 2,
     },
-  };
+};
 
 const styleModalRegister = {
     maxHeight: '100vh',
@@ -104,8 +105,8 @@ const styleModalList = {
 
 
 const actions = [
-    { icon: <AccountBoxOutlined style={{ color: '#42adda', backgroundColor: '#42adda' }} />, name: 'Cadastrar Funcionário' },
-    { icon: <AccountBoxOutlined style={{ color: '#42adda', backgroundColor: '#42adda' }} />, name: 'Cadastrar Serviços' },
+    { icon: <AccountBoxOutlined style={{ color: '#42adda', backgroundColor: '#0073b1' }} />, name: 'Cadastrar Funcionário' },
+    { icon: <AccountBoxOutlined style={{ color: '#42adda', backgroundColor: '#0073b1' }} />, name: 'Cadastrar Serviços' },
 
 ];
 
@@ -141,7 +142,7 @@ const Measurement = () => {
     const [novaData, setNovaData] = React.useState(null);
     const [clientForTime, setClientforTime] = React.useState([{ clientes: [] }]);
     const [connectednumber, setConnectedNumber] = React.useState(false);
-    const [userData, setUserData] = React.useState({funcionarios:[]});
+    const [userData, setUserData] = React.useState({ funcionarios: [] });
     const listRef = React.useRef(null);
     const [paymentState, setPaymentState] = React.useState({ assinatura: false });
     const [dataRowRecompra, setDataRowRecompra] = React.useState('');
@@ -168,6 +169,8 @@ const Measurement = () => {
     const [cargoFuncionario, setCargoFuncionario] = React.useState('');
     const [nomeFuncionario, setNomeFuncionario] = React.useState('');
     const [etapaConfirm, setEtapaConfirm] = React.useState(false);
+    const [nomeServico, setNomeServico] = React.useState('');
+    const [valorServico, setValorServico] = React.useState('');
 
 
 
@@ -240,10 +243,10 @@ transition: transform 0.3s;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  max-width: 350px;
   font-family: Arial, sans-serif;
   transition: transform 0.3s ease-in-out;
   width:80%
+  height:400px;
 
   &:hover {
     transform: scale(1.05);
@@ -295,6 +298,88 @@ transition: transform 0.3s;
 `;
 
 
+    const ServiceCardContainer = styled.div`
+  position: relative;
+  width: 100px;
+  padding: 24px;
+  background: linear-gradient(145deg, #ffffff, #f5f5f5);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    background: radial-gradient(circle at 70% 30%, rgba(106, 17, 203, 0.1) 0%, transparent 70%);
+  }
+`;
+
+    const ServiceTitle = styled.h3`
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+`;
+
+    const ServiceDescription = styled.p`
+  margin: 0 0 16px 0;
+  color: #666;
+  font-size: 13;
+  line-height: 1.5;
+`;
+
+    const ServicePrice = styled.span`
+  display: inline-block;
+  padding: 6px 12px;
+  background: rgba(37, 117, 252, 0.1);
+  color: #2575fc;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+`;
+
+    const DeleteButton = styled.button`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 0, 0, 0.1);
+  border: none;
+  border-radius: 50%;
+  color: #ff4444;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 0, 0, 0.2);
+    transform: scale(1.1);
+  }
+`;
 
 
     const handleOpen = () => setOpen(true);
@@ -306,7 +391,7 @@ transition: transform 0.3s;
     const handleOpenList = () => setOpenList(true);
     const handleCloseList = () => setOpenList(false);
     const columns = [
-        { field: 'id', headerName: 'id', width: 150 },
+        { field: 'servico', headerName: 'Serviço:', width: 150 },
         { field: 'nome', headerName: 'Nome', width: 130 },
         { field: 'employee', headerName: 'Quem Atende', width: 150 },
         { field: 'time', headerName: 'Horário', width: 130 },
@@ -319,7 +404,7 @@ transition: transform 0.3s;
         { nome: "Corte de Cabelo", preco: "R$30" },
         { nome: "Barba", preco: "R$20" },
         { nome: "Corte + Barba", preco: "R$45" }
-      ];
+    ];
 
 
     const data = [
@@ -335,8 +420,8 @@ transition: transform 0.3s;
 
 
     async function dataInstanceValue() {
-        const idi = '3DFAEF678335D000361B4E20A388CB1E';  
-        
+        const idi = '3DFAEF678335D000361B4E20A388CB1E';
+
         const tokeni = '1BDC7D7E3A4F340F43C450FD';
 
         try {
@@ -465,20 +550,21 @@ transition: transform 0.3s;
                             time: appt.time,
                             id: appt.id,
                             phone: appt.phone,
-                            nome: appt.nome
+                            nome: appt.nome,
+                            servico: appt.servico
                         }))
                         : [];
-                        setBookedAppointments(formatted);
+                    setBookedAppointments(formatted);
                 });
 
-         
+
                 const appointments = ref(db, `${base64.encode(user.email)}`);
 
-                   onValue(appointments, (snapshot) => {
-                          setUserData(snapshot.val())
-                      
+                onValue(appointments, (snapshot) => {
+                    setUserData(snapshot.val())
+
                 });
-            
+
                 dataInstanceValue()
                 return () => unsubscribe();
             }
@@ -518,7 +604,7 @@ transition: transform 0.3s;
         return () => clearInterval(interval);
     }, []);
 
-    console.log('USERDATA::::::::',userData)
+    console.log('USERDATA::::::::', userData)
 
     React.useEffect(() => {
         const atualizar = async () => {
@@ -595,9 +681,9 @@ transition: transform 0.3s;
                 });
                 return hasFreeEmployee;
             });
-    
+
             setAvailableTimes(updatedAvailableTimes);
-    
+
             const filteredEmployees = Object.entries(userData.funcionarios)
                 .filter(([empKey, empData]) =>
                     updatedAvailableTimes.some((time) =>
@@ -611,9 +697,9 @@ transition: transform 0.3s;
                     nome: empData.nome,
                     cargo: empData.cargo
                 }));
-    
+
             setAvailableEmployees(filteredEmployees);
-    
+
             // Logs de debug
             console.log("📋 Agendamentos:", bookedAppointments);
             console.log("🕒 Horários disponíveis:", updatedAvailableTimes);
@@ -622,22 +708,22 @@ transition: transform 0.3s;
             console.log("🧑 Funcionários:", userData.funcionarios);
         }
     }, [bookedAppointments, userData, workHours]);
-    
+
 
 
     React.useEffect(() => {
-   
+
         if (userMessage.toLowerCase() === "agendar") {
             const bodyT = {
                 phone: `556199273537`,
                 message: "Olá tudo bom aqui é do(a) ESTABELECIMENTO, caso queira *Agendar Agora*, digite *1*, caso queira *Falar com Atendente* digite *2*?",
                 delayMessage: 2
             };
-    
+
             sendMessageAll(bodyT);
 
         }
-    
+
         else if (userMessage.toLowerCase() === "1" && !selectedDate) {
             const body = {
                 message: `Qual a data desejada? (Digite no formato dia/mês: *Ex: 22/04*)`,
@@ -645,60 +731,64 @@ transition: transform 0.3s;
                 delayMessage: 2
             };
             sendMessageAll(body);
-        
+
         }
-    
+
         else if (!selectedDate && /^\d{2}\/\d{2}$/.test(userMessage)) {
             setSelectedDate(userMessage);
-    
+
             const timeList = availableTimes
                 .map((time) => `${time}`)
                 .join("\n");
-    
+
             const body = {
                 message: `Horários disponíveis para ${userMessage}:\n\n${timeList}\n\n*Digite o horário desejado.*`,
                 phone: `${messageDataUser.phone}`,
                 delayMessage: 2
             };
-    
+
             sendMessageAll(body);
         }
-    
+
         else if (selectedDate && !selectedTime) {
             setSelectedTime(userMessage);
-    
-            // Enviar os serviços após escolher o horário
-            const services = [
-                { id: 1, nome: "Corte de Cabelo", preco: "R$30" },
-                { id: 2, nome: "Barba", preco: "R$20" },
-                { id: 3, nome: "Corte + Barba", preco: "R$45" }
-            ];
-    
-            const serviceList = services
-                .map((servico, index) => `${index + 1}. ${servico.nome} - ${servico.preco}`)
-                .join("\n");
-    
-            const serviceBody = {
-                phone: `+${messageDataUser.phone}`,
-                message: `Escolha um dos serviços disponíveis abaixo:\n\n${serviceList}\n\n*Digite o número do serviço desejado.*`,
-                delayMessage: 2
-            };
-    
-            sendMessageAll(serviceBody)
+
+            // Verifica se userData e userData.servicos existem
+            if (userData && userData.servicos) {
+                // Converte o objeto de serviços em array
+                const servicesArray = Object.entries(userData.servicos).map(([key, servico]) => ({
+                    id: key,
+                    ...servico
+                }));
+
+                // Cria a lista de serviços para a mensagem
+                const serviceList = servicesArray
+                    .map((servico, index) => `${index + 1}. ${servico.nome} - ${servico.valor}`)
+                    .join("\n");
+
+                const serviceBody = {
+                    phone: `+${messageDataUser.phone}`,
+                    message: `Escolha um dos serviços disponíveis abaixo:\n\n${serviceList}\n\n*Digite o número do serviço desejado.*`,
+                    delayMessage: 2
+                };
+
+                sendMessageAll(serviceBody);
+            } else {
+                console.error("Serviços não disponíveis no userData");
+                // Você pode adicionar um tratamento de erro aqui, como enviar uma mensagem ao usuário
+            }
         }
-    
         // Usuário escolheu um serviço pelo índice
-        else if (selectedTime && selectedDate && !servicoSelecionado &&/^\d+$/.test(userMessage) ) {
-            const services = [
-                { id: 1, nome: "Corte de Cabelo", preco: "R$30" },
-                { id: 2, nome: "Barba", preco: "R$20" },
-                { id: 3, nome: "Corte + Barba", preco: "R$45" }
-            ];
-    
+        else if (selectedTime && selectedDate && !servicoSelecionado && /^\d+$/.test(userMessage)) {
+            const services = Object.entries(userData.servicos).map(([key, servico]) => ({
+                id: key,
+                nome: servico.nome,
+                valor: servico.valor  // Note que mudei de "valor" para "preco" para manter compatibilidade
+            }));
+
             const serviceIndex = parseInt(userMessage) - 1;
             const selectedService = services[serviceIndex];
-           setServicoSelecionado(selectedService)
-    
+            setServicoSelecionado(selectedService);
             if (selectedService) {
                 const availableEmployees = Object.keys(userData.funcionarios).filter(
                     (emp) =>
@@ -710,92 +800,92 @@ transition: transform 0.3s;
                                 appt.employee === emp
                         )
                 );
-    
+
                 if (availableEmployees.length > 0) {
                     const employeesList = availableEmployeesa
                         .map((emp, index) => `${index + 1}. ${emp.nome}`)
                         .join("\n");
-    
+
                     const employeeBody = {
                         phone: `+${messageDataUser.phone}`,
                         message: `Funcionários disponíveis para ${selectedTime} no dia ${selectedDate}:\n\n${employeesList}\n\n*Digite o número correspondente ao funcionário desejado.*`,
                         delayMessage: 2
                     };
-    
+
                     sendMessageAll(employeeBody);
                     setEtapaConfirm(true)
-    
-              
-              
-                } 
-           
+
+
+
+                }
+
             }
-        } else if (selectedEmployee){
+        } else if (selectedEmployee) {
             console.log('EMPLYEEESELEICOADOOO')
-          }
-          
-    
-    
+        }
+
+
+
     }, [userMessage]);
 
 
 
     React.useEffect(() => {
-        if (selectedTime && selectedDate && servicoSelecionado && /^\d+$/.test(userMessage) ) {
+        if (selectedTime && selectedDate && servicoSelecionado && /^\d+$/.test(userMessage)) {
             const index = parseInt(userMessage) - 1;
             const selectedFunc = availableEmployeesa[index];
-        
-    
-                setSelectedEmployee(selectedFunc.nome);
-        
-                const body = {
-                    message: `✅ Agendamento Confirmado com ${selectedFunc.nome} às ${selectedTime} no dia ${selectedDate}.`,
-                    phone: `+${messageDataUser.phone}`,
-                    delayMessage: 2
-                };
-        
-                const bodyError = {
-                    message: `❌ Instabilidade para agendamentos com ${selectedFunc.nome} às ${selectedTime} no dia ${selectedDate}.`,
-                    phone: `+${messageDataUser.phone}`,
-                    delayMessage: 2
-                };
-        
-                const db = getDatabase();
-                set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), {
-                    time: selectedTime,
-                    date: selectedDate,
-                    employee: selectedFunc.nome,
-                    id: messageDataUser.phone,
-                    phone: messageDataUser.phone,
-                    nome: messageDataUser.senderName,
-                    servico: servicoSelecionado?.nome ?? ""
-                })
+
+
+            setSelectedEmployee(selectedFunc.nome);
+
+            const body = {
+                message: `✅ Agendamento Confirmado com ${selectedFunc.nome} às ${selectedTime} no dia ${selectedDate}.`,
+                phone: `+${messageDataUser.phone}`,
+                delayMessage: 2
+            };
+
+            const bodyError = {
+                message: `❌ Instabilidade para agendamentos com ${selectedFunc.nome} às ${selectedTime} no dia ${selectedDate}.`,
+                phone: `+${messageDataUser.phone}`,
+                delayMessage: 2
+            };
+
+            const db = getDatabase();
+            set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), {
+                time: selectedTime,
+                date: selectedDate,
+                employee: selectedFunc.nome,
+                id: messageDataUser.phone,
+                phone: messageDataUser.phone,
+                nome: messageDataUser.senderName,
+                servico: servicoSelecionado?.nome ?? ""
+            })
                 .then(() => sendMessageAll(body))
                 .catch(() => sendMessageAll(bodyError));
-        
-                const post = {
-                    clientes: relatorio.clientes + 1,
-                };
-        
-                const updates = {};
-                updates[`${base64.encode(user.email)}/relatorios`] = post;
-                update(ref(db), updates).catch(console.error);
-        
-                setEtapaConfirm(false);
-                setProxAgendar(false);
-                setSelectedDate(false);
-                setEtapaConfirm(true);
-           
-         
-        } else if (selectedEmployee){
-          console.log('EMPLYEEESELEICOADOOO')
+
+            const post = {
+                clientes: relatorio.clientes + 1,
+            };
+
+            const updates = {};
+            updates[`${base64.encode(user.email)}/relatorios`] = post;
+            update(ref(db), updates).catch(console.error);
+
+            setEtapaConfirm(false);
+            setProxAgendar(false);
+            setSelectedDate(false);
+            setEtapaConfirm(true);
+
+
+        } else if (selectedEmployee) {
+            console.log('EMPLYEEESELEICOADOOO')
         }
-        
+
     }, [userMessage]);
-    
 
 
-    
+
+
 
     console.log('agendamentos::::::::', bookedAppointments)
 
@@ -863,26 +953,55 @@ transition: transform 0.3s;
     }, [user])
 
 
+
+
     const handleChangeMenu = (event) => {
 
         if (event == 'Cadastrar Funcionário') {
             handleOpen()
         } else if (event == 'Cadastrar Serviços') {
-           
+            handleOpenRegister()
         }
 
 
     };
 
+    const onDeleteService = (service) => {
+
+        const db = getDatabase();
+        remove(ref(db, `${base64.encode(user.email)}/servicos/${base64.encode(service.valor + service.nome)}`), {})
+            .then(() => alert('Serviço removido!'))
+            .catch(err => console.log(err));
+
+    };
+
+    const onDeleteEmployee = (service) => {
+
+        const db = getDatabase();
+        remove(ref(db, `${base64.encode(user.email)}/funcionarios/${base64.encode(service.nome + service.cargo)}`), {})
+            .then(() => alert('Serviço removido!'))
+            .catch(err => console.log(err));
+
+    };
 
     async function registerFuncionario() {
         const db = getDatabase();
-            set(ref(db, `${base64.encode(user.email)}/funcionarios/${base64.encode(nomeFuncionario+cargoFuncionario)}`), {
-               nome:nomeFuncionario,
-               cargo:cargoFuncionario
-            }).then(() =>   handleClose()).catch(() => sendMessageAll(bodyError));
-    
-        
+        set(ref(db, `${base64.encode(user.email)}/funcionarios/${base64.encode(nomeFuncionario + cargoFuncionario)}`), {
+            nome: nomeFuncionario,
+            cargo: cargoFuncionario
+        }).then(() => handleClose()).catch(() => console.log());
+
+
+    }
+
+    async function registerServico() {
+        const db = getDatabase();
+        set(ref(db, `${base64.encode(user.email)}/servicos/${base64.encode(valorServico + nomeServico)}`), {
+            nome: nomeServico,
+            valor: valorServico
+        }).then(() => handleCloseRegister()).catch(error => console.log('ERRO AO CADASTRAR SERVIÇO:::::::', error));
+
+
     }
 
     const fetchBookedAppointments = async () => {
@@ -990,7 +1109,61 @@ transition: transform 0.3s;
                                 </Info>
                             </CardT>
 
+
                         </ContainerT>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: 15 }} >
+                            <div style={{ display: "flex", flexDirection: 'column' }} >
+                                <h3 style={{ color: 'Black', alignSelf: 'flex-start', fontSize: 22 }} >Serviços:</h3>
+                                <div style={{ display: 'flex', width: '45%', gap: 10, minWidth: 220 }} >
+
+                                    {
+                                        userData?.servicos ? (
+                                            Object.keys(userData.servicos).map((key, index) => {
+                                                const servico = userData.servicos[key];
+                                                return (
+                                                    <ServiceCardContainer key={key}>
+                                                        <DeleteButton onClick={() => onDeleteService(servico)}>
+                                                            ×
+                                                        </DeleteButton>
+                                                        <ServiceTitle>{index + 1} - {servico.nome}</ServiceTitle>
+                                                        <ServiceDescription>Serviço</ServiceDescription>
+                                                        <ServicePrice>{servico.valor}</ServicePrice>
+                                                    </ServiceCardContainer>
+                                                );
+                                            })
+                                        ) : (
+                                            <p style={{ fontWeight: "bold", color: 'white' }} >Nenhum serviço cadastrado</p>
+                                        )
+                                    }
+                                </div>
+                            </div>
+
+                            <div style={{ display: "flex", flexDirection: 'column' }} >
+                            <h3 style={{ color: 'Black', alignSelf: 'flex-start', fontSize: 22 }} >Funcionários:</h3>
+                            <div style={{ display: 'flex', width: '45%', gap: 10 , minWidth: 220}} >
+
+                                {
+                                    userData?.funcionarios ? (
+                                        Object.keys(userData.funcionarios).map((key, index) => {
+                                            const servico = userData.funcionarios[key];
+                                            return (
+                                                <ServiceCardContainer key={key}>
+                                                    <DeleteButton onClick={() => onDeleteEmployee(servico)}>
+                                                        ×
+                                                    </DeleteButton>
+                                                    <ServiceTitle>{index + 1} - {servico.nome}</ServiceTitle>
+                                                    <ServiceDescription>Função:</ServiceDescription>
+                                                    <ServicePrice>{servico.cargo}</ServicePrice>
+                                                </ServiceCardContainer>
+                                            );
+                                        })
+                                    ) : (
+                                        <p style={{ fontWeight: "bold", color: 'white' }} >Nenhum Funcionário cadastrado</p>
+                                    )
+                                }
+                            </div>
+                        </div>
+                        </div>
 
                     </ContainerRules>
                     <div style={{ display: 'flex', flexDirection: 'column', width: '95%' }} >
@@ -1056,6 +1229,7 @@ transition: transform 0.3s;
                                 icon={action.icon}
                                 tooltipTitle={action.name}
                                 onClick={() => handleChangeMenu(action.name)}
+                                style={{ backgroundColor: '#0073b1' }}
                             />
                         ))}
                     </SpeedDial>
@@ -1079,21 +1253,51 @@ transition: transform 0.3s;
                 <Box sx={style}>
                     <div style={{ display: 'flex', flexDirection: 'row', gap: 7 }} >
                         <Typography id="modal-modal-title" variant="h3" style={{ fontWeight: 'bold', fontSize: 20 }} >
-                           Cadastrar Funcionário:
+                            Cadastrar Funcionário:
                         </Typography>
-                        
+
                     </div>
-                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', fontSize: 16 }} >
-                           Nome:
-                        </Typography>
+                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', marginTop: 10, fontSize: 16 }} >
+                        Nome:
+                    </Typography>
                     <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={nomeFuncionario} label="Insira um nome...." onChange={text => setNomeFuncionario(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
 
-                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', fontSize: 16 }} >
-                           Cargo:
-                        </Typography>
+                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', marginTop: 10, fontSize: 16 }} >
+                        Cargo:
+                    </Typography>
                     <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={cargoFuncionario} label="insira um cargo..." onChange={text => setCargoFuncionario(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
 
-                    <Button style={{ marginTop: 10 }} variant='contained' fullWidth onClick={() => registerFuncionario()}>Cadastrar</Button>
+                    <Button style={{ marginTop: 10, backgroundColor: '#0073b1' }} variant='contained' fullWidth onClick={() => registerFuncionario()}>Cadastrar</Button>
+
+
+                </Box>
+            </Modal>
+
+
+            <Modal
+                open={openRegister}
+                onClose={handleCloseRegister}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box sx={style}>
+                    <div style={{ display: 'flex', flexDirection: 'row', gap: 7 }} >
+                        <Typography id="modal-modal-title" variant="h3" style={{ fontWeight: 'bold', fontSize: 20 }} >
+                            Cadastrar Serviço:
+                        </Typography>
+
+                    </div>
+                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', marginTop: 10, fontSize: 16 }} >
+                        Nome Do Serviço:
+                    </Typography>
+                    <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={nomeServico} label="Insira um nome...." onChange={text => setNomeServico(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
+
+                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', marginTop: 10, fontSize: 16 }} >
+                        Valor Do Serviço:
+                    </Typography>
+                    <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={valorServico} label="Ex: 15.50..." onChange={text => setValorServico(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
+
+                    <Button style={{ marginTop: 10, backgroundColor: '#0073b1' }} variant='contained' fullWidth onClick={() => registerServico()}>Cadastrar</Button>
 
 
                 </Box>

@@ -44,13 +44,13 @@ const theme = createTheme({
     light: {
       palette: {
         primary: {
-          main: '#FF5733',
+          main: '#0073b1',
           light:'#7F00FF',
           dark:"#7F00FF"
         },
 
         secondary:{
-          main: '#FF5733',
+          main: '#0073b1',
           light:'#7F00FF',
           dark:"#7F00FF"
         },
@@ -63,13 +63,13 @@ const theme = createTheme({
     dark: {
       palette: {
         primary: {
-          main: '#FF5733',
+          main:'#0073b1',
           light:'#7F00FF',
           dark:"#7F00FF"
         },
 
         secondary:{
-          main: '#FF5733',
+          main:'#0073b1',
           light:'#7F00FF',
           dark:"#7F00FF"
         },
