@@ -604,38 +604,8 @@ transition: transform 0.3s;
         return () => clearInterval(interval);
     }, []);
 
-    console.log('USERDATA::::::::', userData)
+    console.log('USERDATA::::::::', userMessage)
 
-    React.useEffect(() => {
-        const atualizar = async () => {
-            try {
-                const response = await fetch('https://backendpedro.vercel.app/dadosChat', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
-                if (!response.ok) {
-                    throw new Error(`Erro: ${response.status} - ${response.statusText}`);
-                }
-
-                const result = await response.json();
-
-                setMessageDataUser(result)
-                setUserMessage(result.text.message)
-            } catch (error) {
-                console.error('Erro ao buscar dados:', error);
-            }
-        };
-
-
-
-        const interval = setInterval(() => {
-            atualizar();
-        }, 5000);
-
-        return () => clearInterval(interval);
-    }, []);
 
     React.useEffect(() => {
         const atualizar = async () => {
@@ -721,16 +691,18 @@ transition: transform 0.3s;
             };
 
             sendMessageAll(bodyT);
+            setProxAgendar(true)
 
         }
 
-        else if (userMessage.toLowerCase() === "1" && !selectedDate) {
+        else if (userMessage.toLowerCase() === "1" && !selectedDate && proxAgendar) {
             const body = {
                 message: `Qual a data desejada? (Digite no formato dia/mês: *Ex: 22/04*)`,
                 phone: `+${messageDataUser.phone}`,
                 delayMessage: 2
             };
             sendMessageAll(body);
+            setProxAgendar(false)
 
         }
 
@@ -812,9 +784,16 @@ transition: transform 0.3s;
                         delayMessage: 2
                     };
 
-                    sendMessageAll(employeeBody);
-                    setEtapaConfirm(true)
 
+                   
+                sendMessageAll(employeeBody)
+              
+            
+
+                setTimeout(() => {
+                    setEtapaConfirm(true)
+                }, 6000);
+              
 
 
                 }
@@ -829,27 +808,29 @@ transition: transform 0.3s;
     }, [userMessage]);
 
 
-
     React.useEffect(() => {
-        if (selectedTime && selectedDate && servicoSelecionado && /^\d+$/.test(userMessage)) {
+        const podeAgendar = etapaConfirm && servicoSelecionado && /^\d+$/.test(userMessage);
+    
+        if(podeAgendar){
             const index = parseInt(userMessage) - 1;
             const selectedFunc = availableEmployeesa[index];
-
-
+    
+            if(!selectedFunc) return;
+    
             setSelectedEmployee(selectedFunc.nome);
-
+    
             const body = {
                 message: `✅ Agendamento Confirmado com ${selectedFunc.nome} às ${selectedTime} no dia ${selectedDate}.`,
                 phone: `+${messageDataUser.phone}`,
                 delayMessage: 2
             };
-
+    
             const bodyError = {
                 message: `❌ Instabilidade para agendamentos com ${selectedFunc.nome} às ${selectedTime} no dia ${selectedDate}.`,
                 phone: `+${messageDataUser.phone}`,
                 delayMessage: 2
             };
-
+    
             const db = getDatabase();
             set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), {
                 time: selectedTime,
@@ -862,27 +843,21 @@ transition: transform 0.3s;
             })
                 .then(() => sendMessageAll(body))
                 .catch(() => sendMessageAll(bodyError));
-
+    
             const post = {
                 clientes: relatorio.clientes + 1,
             };
-
+    
             const updates = {};
             updates[`${base64.encode(user.email)}/relatorios`] = post;
             update(ref(db), updates).catch(console.error);
-
+    
             setEtapaConfirm(false);
             setProxAgendar(false);
             setSelectedDate(false);
-            setEtapaConfirm(true);
-
-
-        } else if (selectedEmployee) {
-            console.log('EMPLYEEESELEICOADOOO')
         }
-
-    }, [userMessage]);
-
+    }, [userMessage,etapaConfirm]);
+    
 
 
 
