@@ -685,7 +685,7 @@ transition: transform 0.3s;
 
         if (userMessage.toLowerCase() === "agendar") {
             const bodyT = {
-                phone: `556199273537`,
+                phone: `+${messageDataUser.phone}`,
                 message: "Olá tudo bom aqui é do(a) ESTABELECIMENTO, caso queira *Agendar Agora*, digite *1*, caso queira *Falar com Atendente* digite *2*?",
                 delayMessage: 2
             };
