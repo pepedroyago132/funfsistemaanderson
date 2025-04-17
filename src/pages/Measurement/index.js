@@ -33,11 +33,10 @@ import { dataInstance } from '../../services';
 import styled from 'styled-components';
 import { useMediaQuery } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { CircularProgress } from "@mui/material"; // Certifique-se de ter os componentes do Material-UI instalados
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 
 
 
@@ -56,7 +55,7 @@ const style = {
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
-    gap: 10,
+    gap: 15,
 
     // Responsivo com breakpoints do MUI
     '@media (max-width:600px)': {
@@ -171,6 +170,32 @@ const Measurement = () => {
     const [etapaConfirm, setEtapaConfirm] = React.useState(false);
     const [nomeServico, setNomeServico] = React.useState('');
     const [valorServico, setValorServico] = React.useState('');
+    const [etapaDate, setEtapaDate] = React.useState('');
+    const [horarioManual, setManualHorarios] = React.useState([]);
+    const [dateManual, setDateManual] = React.useState('');
+    const [employeesManual, setEmployeesManual] = React.useState([]);
+    const [selectedHorarioManual, setSelectedHorarioManual] = React.useState('');
+    const [servicosManual, setServicosManual] = React.useState([]);
+    const [selectedServicosManual, setSelectedServicoManual] = React.useState([]);
+    const [selectedEmployeeManual, setSelectedEmployeeManual] = React.useState([]);
+    const [nomeClienteManual, setNomeClienteManual] = React.useState('');
+
+
+
+    const handleChangeHorario = (event) => {
+        setSelectedHorarioManual(event.target.value);
+    };
+
+    const handleChangeFuncionario = (event) => {
+        setEmployeesManual(event.target.value);
+    };
+
+    const handleChangeServicos = (event) => {
+        setServicosManual(event.target.value);
+    };
+
+
+
 
 
 
@@ -420,9 +445,9 @@ transition: transform 0.3s;
 
 
     async function dataInstanceValue() {
-        const idi = '3DFAEF678335D000361B4E20A388CB1E';
+        const idi = '3DFCF5280763B0FF47C28E66062CE0C1';
 
-        const tokeni = '1BDC7D7E3A4F340F43C450FD';
+        const tokeni = 'FD15E27CF8D3D8AEFD9EE8E8';
 
         try {
             const response = await dataInstance(idi, tokeni); // Aguarda a função retornar o resultado
@@ -437,14 +462,35 @@ transition: transform 0.3s;
         }
     }
 
+    const handleRowSelection = (selectedId) => {
+        console.log('--- INÍCIO DA SELEÇÃO ---');
+        console.log('ID recebido:', selectedId, 'Tipo:', typeof selectedId);
 
-    const handleRowSelection = (selectionModel) => {
-        // Pegar os dados das linhas selecionadas
-        const selectedRowsData = filteredData.filter((row) => selectionModel.includes(row.id));
-        setDataRow(selectedRowsData);
+        // Verifica se bookedAppointments existe e tem dados
+        console.log('Total de agendamentos:', bookedAppointments?.length || 0);
 
-        console.log('Linhas selecionadas:', selectedRowsData);
+        if (!bookedAppointments || bookedAppointments.length === 0) {
+            console.error('Nenhum dado em bookedAppointments');
+            setDataRow([]);
+            return;
+        }
+
+        // Busca o item correspondente (com verificação de tipo)
+        const selectedRowData = bookedAppointments.find((row) => {
+            console.log(`Comparando: row.id=${row.id} (${typeof row.id}) com selectedId=${selectedId} (${typeof selectedId})`);
+            return row.id == selectedId; // Usamos == para compatibilidade de tipos
+        });
+
+        if (!selectedRowData) {
+            console.warn('Nenhum dado encontrado para o ID:', selectedId);
+        } else {
+            console.log('Dados encontrados:', selectedRowData);
+        }
+
+        setDataRow(selectedRowData ? [selectedRowData] : []);
     };
+
+    console.log('AGENDAMENTO SLECIONADO::::::::::::::', datarow)
 
     const handleRowRecompra = (selectionModel) => {
         // Pegar os dados das linhas selecionadas
@@ -454,83 +500,52 @@ transition: transform 0.3s;
         console.log('Linhas selecionadas:', selectedRowsData);
     };
 
-    const rowSelectedRecompra = async () => {
+    const deleteAgendamento = (selectionModel) => {
         const db = getDatabase();
-
-        if (user) {
-            try {
-                const totalValor = dataRowRecompra.reduce((soma, item) => {
-                    return soma + Number(item.valorMedicamento);
-                }, 0); // Inicia com 0 como valor base
-
-                // Certifica-se de que totalValor esteja no formato 00.00
-                const totalValorFormatado = parseFloat(totalValor.toFixed(2));
-
-                // Caminho no banco de dados
-                const userPath = `${base64.encode(user.email)}/relatorios/recompra`;
-                const dbRef = ref(db, userPath);
-
-                // Busca o valor atual do banco de dados
-                const snapshot = await get(dbRef);
-
-                let valorAtual = 0;
-                if (snapshot.exists()) {
-                    valorAtual = Number(snapshot.val().valor);
-                }
-
-                // Certifica-se de que valorAtual esteja no formato 00.00
-                valorAtual = parseFloat(valorAtual.toFixed(2));
-
-                const novoValor = valorAtual + totalValorFormatado;
-
-                // Certifica-se de que novoValor esteja no formato 00.00
-                const novoValorFormatado = parseFloat(novoValor.toFixed(2));
-
-                // Prepara o objeto para atualização
-                const post = {
-                    valor: novoValorFormatado, // Novo valor somado e formatado
-                };
-
-                // Atualiza o banco de dados
-                await update(ref(db), { [userPath]: post });
-                console.log('VALOR ALTERADO:', novoValorFormatado);
-
-                dataRowRecompra.map((item) => {
-                    if (user) {
-
-                        const post = {
-                            nome: item.nome,
-                            cpf: item.cpf,
-                            contato: item.contato,
-                            acabaEm: '05/02/2025',
-                            doses: item.doses,
-                            remedio: item.remedio,
-                            horario: item.horario,
-                            dataCadastro: item.dataCadastro,
-                            receita: true,
-                            usoContinuo: item.usoContinuo,
-                            msgUsoContinuo: item.msgUsoContinuo || '',
-                            msgReceita: item.msgReceita || '',
-                            digit: item.digit,
-                            fotoUrl: item.fotoUrl,
-                            valorMedicamento: item.valorMedicamento
-                        }
-
-                        const updates = {};
-                        updates[`${base64.encode(user.email)}/clientes/${base64.encode(item.cpf + item.digit + item.remedio)}`] = post;
-                        update(ref(db), updates).then(log => console.log(log)).catch(log => window.alert('Verifique sua conexão com a internet'))
-                    }
-                })
+        const post = {
+            clientes: relatorio.clientes - 1,
+        };
 
 
-            } catch (error) {
-                console.error('Erro ao atualizar o valor:', error);
-                window.alert(error);
-            }
-        } else {
-            console.error("Usuário não autenticado.");
-        }
+
+        remove(ref(db, `${base64.encode(user.email)}/servicos/${base64.encode(datarow.phone + datarow.digit)}`), {})
+            .then(() => {
+                const updates = {};
+                updates[`${base64.encode(user.email)}/relatorios`] = post;
+                update(ref(db), updates).then(() => alert('Agendamento Cancelado')).catch(console.error);
+            })
+            .catch(err => console.log(err));
+    };
+
+    const cadastrarManualCliente = () => {
+        const digit1 = bookedAppointments.length + 1
+
+        const db = getDatabase();
+        set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone + digit1)}`), {
+            time: horarioManual,
+            date: dateManual,
+            employee: employeesManual,
+            id: digit1,
+            phone: '00000000',
+            nome: nomeClienteManual,
+            servico: servicosManual,
+            digit: digit1
+        })
+            .then(() => sendMessageAll(body))
+            .catch(() => sendMessageAll(bodyError));
+
+        const post = {
+            clientes: relatorio.clientes + 1,
+        };
+
+        const updates = {};
+        updates[`${base64.encode(user.email)}/relatorios`] = post;
+        update(ref(db), updates).catch(console.error);
+handleCloseList()
     }
+
+
+
 
     React.useEffect(() => {
         const db = getDatabase()
@@ -551,7 +566,9 @@ transition: transform 0.3s;
                             id: appt.id,
                             phone: appt.phone,
                             nome: appt.nome,
-                            servico: appt.servico
+                            servico: appt.servico,
+                            date: appt.date,
+                            digit: appt.digit
                         }))
                         : [];
                     setBookedAppointments(formatted);
@@ -574,8 +591,8 @@ transition: transform 0.3s;
     }, [])
 
     React.useEffect(() => {
-        const instancia = "3DFAEF678335D000361B4E20A388CB1E"; // Substitua pelo ID da instância
-        const token = "1BDC7D7E3A4F340F43C450FD"; // Substitua pelo token
+        const instancia = "3DFCF5280763B0FF47C28E66062CE0C1"; // Substitua pelo ID da instância
+        const token = "FD15E27CF8D3D8AEFD9EE8E8"; // Substitua pelo token
         const novaUrlWebhook = "https://backendpedro.vercel.app/webhook";
 
         const atualizarWebhook = async () => {
@@ -585,7 +602,7 @@ transition: transform 0.3s;
                     {
                         method: "PUT",
                         headers: {
-                            "Client-Token": "F2af3f114069741f7ba807e72181650e9S",
+                            "Client-Token": "F461d204302454ba1851a2c62c4075797S",
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({ value: novaUrlWebhook }),
@@ -639,27 +656,42 @@ transition: transform 0.3s;
     }, []);
 
 
+    const formatDate = (isoDate) => {
+        if (!isoDate) return '';
+        const [year, month, day] = isoDate.split("-");
+        return `${day}/${month}`;
+    };
+
 
     React.useEffect(() => {
-        if (bookedAppointments && Object.keys(userData.funcionarios || {}).length > 0) {
+        if (
+            bookedAppointments &&
+            Object.keys(userData.funcionarios || {}).length > 0
+        ) {
+            const appointmentsForDate = bookedAppointments.filter(
+                (appt) => appt.date === selectedDate
+            );
             const updatedAvailableTimes = workHours.filter((time) => {
-                // Verifica se há pelo menos um funcionário livre no horário
-                const hasFreeEmployee = Object.entries(userData.funcionarios).some(([empKey, empData]) => {
-                    return !bookedAppointments.some(
-                        (appt) => appt.time === time && appt.employee === empKey
-                    );
-                });
+                const hasFreeEmployee = Object.entries(userData.funcionarios).some(
+                    ([empKey]) => {
+                        return !appointmentsForDate.some(
+                            (appt) => appt.time === time && appt.employee === empKey
+                        );
+                    }
+                );
                 return hasFreeEmployee;
             });
 
             setAvailableTimes(updatedAvailableTimes);
 
             const filteredEmployees = Object.entries(userData.funcionarios)
-                .filter(([empKey, empData]) =>
-                    updatedAvailableTimes.some((time) =>
-                        !bookedAppointments.some(
-                            (appt) => appt.time === time && appt.employee === empKey
-                        )
+                .filter(([empKey]) =>
+                    updatedAvailableTimes.some(
+                        (time) =>
+                            !appointmentsForDate.some(
+                                (appt) =>
+                                    appt.time === time && appt.employee === empKey
+                            )
                     )
                 )
                 .map(([empKey, empData]) => ({
@@ -671,15 +703,65 @@ transition: transform 0.3s;
             setAvailableEmployees(filteredEmployees);
 
             // Logs de debug
-            console.log("📋 Agendamentos:", bookedAppointments);
+            console.log("📋 Selecteddate", selectedDate);
             console.log("🕒 Horários disponíveis:", updatedAvailableTimes);
             console.log("👥 Funcionários disponíveis:", filteredEmployees);
-            console.log("⚙️ workHours:", workHours);
-            console.log("🧑 Funcionários:", userData.funcionarios);
         }
-    }, [bookedAppointments, userData, workHours]);
+    }, [bookedAppointments, userData, workHours, userMessage]);
 
 
+    React.useEffect(() => {
+
+        // Filtra os agendamentos
+        const appointmentsForDate = bookedAppointments.filter(
+            appt => appt.date === dateManual
+        );
+
+        const availableTimes = workHours.filter(time =>
+            !appointmentsForDate.some(appt => appt.time === time)
+        );
+
+        setManualHorarios(availableTimes)
+
+        const servicesArray = userData?.servicos
+            ? Object.entries(userData.servicos).map(([_, servico], index) => ({
+                tempId: index, // Criamos um ID temporário
+                nome: servico?.nome || 'Nome não definido',
+                valor: servico?.valor || 0
+            }))
+            : [];
+
+        setSelectedServicoManual(servicesArray);
+
+
+    }, [dateManual, userData]);
+
+    React.useEffect(() => {
+        if (!dateManual || !horarioManual || !userData.funcionarios || !bookedAppointments) {
+            setEmployeesManual([]); // Limpa se faltar algum dado
+            return;
+        }
+
+        // 1. Converte bookedAppointments para array (se necessário)
+        const appointmentsArray = Array.isArray(bookedAppointments)
+            ? bookedAppointments
+            : Object.values(bookedAppointments || {});
+
+        // 2. Filtra e mapeia apenas os NOMES dos funcionários disponíveis
+        const availableEmployeeNames = Object.entries(userData.funcionarios)
+            .filter(([empKey]) => { // Usamos apenas a chave (empKey)
+                return !appointmentsArray.some(appt =>
+                    appt.time === horarioManual &&
+                    appt.date === dateManual &&
+                    appt.employee === empKey
+                );
+            })
+            .map(([, empData]) => empData.nome); // Extrai apenas o nome
+
+        // 3. Atualiza o estado com a lista de nomes
+        setSelectedEmployeeManual(availableEmployeeNames);
+
+    }, [dateManual, horarioManual, userData.funcionarios, bookedAppointments]);
 
     React.useEffect(() => {
 
@@ -707,22 +789,62 @@ transition: transform 0.3s;
         }
 
         else if (!selectedDate && /^\d{2}\/\d{2}$/.test(userMessage)) {
+            // Validação melhorada da data (corrigida)
+            const [day, month] = userMessage.split('/').map(Number);
+            const currentYear = new Date().getFullYear();
+
+            // Cria a data corretamente (mês -1 porque JavaScript usa 0-11)
+            const dateObj = new Date(currentYear, month - 1, day);
+
+            // Verifica se a data é válida (agora comparando com os valores originais)
+            if (dateObj.getDate() !== day ||
+                dateObj.getMonth() + 1 !== month ||
+                dateObj.getFullYear() !== currentYear) {
+                const body = {
+                    message: `Data inválida. Por favor, digite no formato dia/mês válido: *Ex: 22/04*`,
+                    phone: `+${messageDataUser.phone}`,
+                    delayMessage: 2
+                };
+                sendMessageAll(body);
+                return;
+            }
+
             setSelectedDate(userMessage);
+            setEtapaDate(true);
 
-            const timeList = availableTimes
-                .map((time) => `${time}`)
-                .join("\n");
+            // Formata a data para o padrão do seu sistema (se necessário)
+            const formattedDate = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
 
-            const body = {
-                message: `Horários disponíveis para ${userMessage}:\n\n${timeList}\n\n*Digite o horário desejado.*`,
-                phone: `${messageDataUser.phone}`,
-                delayMessage: 2
-            };
+            // Filtra os agendamentos
+            const appointmentsForDate = bookedAppointments.filter(
+                appt => appt.date === formattedDate
+            );
 
-            sendMessageAll(body);
+            const availableTimes = workHours.filter(time =>
+                !appointmentsForDate.some(appt => appt.time === time)
+            );
+
+            // Envia a resposta
+            if (availableTimes.length > 0) {
+                const body = {
+                    message: `Horários disponíveis para ${formattedDate}:\n\n${availableTimes.join('\n')}\n\nDigite o horário desejado (ex: 14:00)`,
+                    phone: `+${messageDataUser.phone}`,
+                    delayMessage: 2
+                };
+                sendMessageAll(body);
+            } else {
+                const body = {
+                    message: `Não há horários disponíveis para ${formattedDate}. Por favor, escolha outra data.`,
+                    phone: `+${messageDataUser.phone}`,
+                    delayMessage: 2
+                };
+                sendMessageAll(body);
+                setSelectedDate(userMessage);
+                setEtapaDate(false);
+            }
         }
 
-        else if (selectedDate && !selectedTime) {
+        else if (selectedDate && !selectedTime && /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(userMessage)) {
             setSelectedTime(userMessage);
 
             // Verifica se userData e userData.servicos existem
@@ -768,7 +890,7 @@ transition: transform 0.3s;
                         !bookedAppointments.some(
                             (appt) =>
                                 appt.time === selectedTime &&
-
+                                appt.date === selectedDate &&
                                 appt.employee === emp
                         )
                 );
@@ -785,15 +907,15 @@ transition: transform 0.3s;
                     };
 
 
-                   
-                sendMessageAll(employeeBody)
-              
-            
 
-                setTimeout(() => {
-                    setEtapaConfirm(true)
-                }, 6000);
-              
+                    sendMessageAll(employeeBody)
+
+
+
+                    setTimeout(() => {
+                        setEtapaConfirm(true)
+                    }, 8000);
+
 
 
                 }
@@ -805,64 +927,67 @@ transition: transform 0.3s;
 
 
 
-    }, [userMessage]);
+    }, [userMessage, selectedDate]);
 
 
     React.useEffect(() => {
         const podeAgendar = etapaConfirm && servicoSelecionado && /^\d+$/.test(userMessage);
-    
-        if(podeAgendar){
+
+        if (podeAgendar) {
             const index = parseInt(userMessage) - 1;
             const selectedFunc = availableEmployeesa[index];
-    
-            if(!selectedFunc) return;
-    
+
+            if (!selectedFunc) return;
+
             setSelectedEmployee(selectedFunc.nome);
-    
+
             const body = {
                 message: `✅ Agendamento Confirmado com ${selectedFunc.nome} às ${selectedTime} no dia ${selectedDate}.`,
                 phone: `+${messageDataUser.phone}`,
                 delayMessage: 2
             };
-    
+
             const bodyError = {
                 message: `❌ Instabilidade para agendamentos com ${selectedFunc.nome} às ${selectedTime} no dia ${selectedDate}.`,
                 phone: `+${messageDataUser.phone}`,
                 delayMessage: 2
             };
-    
+
+            const digit1 = bookedAppointments.length + 1
+
             const db = getDatabase();
-            set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone)}`), {
+            set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone + digit1)}`), {
                 time: selectedTime,
                 date: selectedDate,
                 employee: selectedFunc.nome,
                 id: messageDataUser.phone,
                 phone: messageDataUser.phone,
                 nome: messageDataUser.senderName,
-                servico: servicoSelecionado?.nome ?? ""
+                servico: servicoSelecionado?.nome ?? "",
+                digit: digit1
             })
                 .then(() => sendMessageAll(body))
                 .catch(() => sendMessageAll(bodyError));
-    
+
             const post = {
                 clientes: relatorio.clientes + 1,
             };
-    
+
             const updates = {};
             updates[`${base64.encode(user.email)}/relatorios`] = post;
             update(ref(db), updates).catch(console.error);
-    
+
             setEtapaConfirm(false);
             setProxAgendar(false);
             setSelectedDate(false);
         }
-    }, [userMessage,etapaConfirm]);
-    
+    }, [userMessage, etapaConfirm]);
 
 
 
 
-    console.log('agendamentos::::::::', bookedAppointments)
+
+    console.log('agendamentos::::::::', selectedDate)
 
 
     /*          const isEmployeeAvailable = Array.isArray(bookedAppointments) && !bookedAppointments.some(
@@ -1026,6 +1151,7 @@ transition: transform 0.3s;
         }
     }
 
+
     const RenderPayment = () => {
         if (paymentState.assinatura) {
             return (
@@ -1038,7 +1164,7 @@ transition: transform 0.3s;
         }
     }
 
-    console.log('Agendamentos::::', nextBooked)
+    console.log('HORARIOS DISPONÍVEIS::::', horarioManual)
 
 
     if (!user) {
@@ -1114,30 +1240,30 @@ transition: transform 0.3s;
                             </div>
 
                             <div style={{ display: "flex", flexDirection: 'column' }} >
-                            <h3 style={{ color: 'Black', alignSelf: 'flex-start', fontSize: 22 }} >Funcionários:</h3>
-                            <div style={{ display: 'flex', width: '45%', gap: 10 , minWidth: 220}} >
+                                <h3 style={{ color: 'Black', alignSelf: 'flex-start', fontSize: 22 }} >Funcionários:</h3>
+                                <div style={{ display: 'flex', width: '45%', gap: 10, minWidth: 220 }} >
 
-                                {
-                                    userData?.funcionarios ? (
-                                        Object.keys(userData.funcionarios).map((key, index) => {
-                                            const servico = userData.funcionarios[key];
-                                            return (
-                                                <ServiceCardContainer key={key}>
-                                                    <DeleteButton onClick={() => onDeleteEmployee(servico)}>
-                                                        ×
-                                                    </DeleteButton>
-                                                    <ServiceTitle>{index + 1} - {servico.nome}</ServiceTitle>
-                                                    <ServiceDescription>Função:</ServiceDescription>
-                                                    <ServicePrice>{servico.cargo}</ServicePrice>
-                                                </ServiceCardContainer>
-                                            );
-                                        })
-                                    ) : (
-                                        <p style={{ fontWeight: "bold", color: 'white' }} >Nenhum Funcionário cadastrado</p>
-                                    )
-                                }
+                                    {
+                                        userData?.funcionarios ? (
+                                            Object.keys(userData.funcionarios).map((key, index) => {
+                                                const servico = userData.funcionarios[key];
+                                                return (
+                                                    <ServiceCardContainer key={key}>
+                                                        <DeleteButton onClick={() => onDeleteEmployee(servico)}>
+                                                            ×
+                                                        </DeleteButton>
+                                                        <ServiceTitle>{index + 1} - {servico.nome}</ServiceTitle>
+                                                        <ServiceDescription>Função:</ServiceDescription>
+                                                        <ServicePrice>{servico.cargo}</ServicePrice>
+                                                    </ServiceCardContainer>
+                                                );
+                                            })
+                                        ) : (
+                                            <p style={{ fontWeight: "bold", color: 'white' }} >Nenhum Funcionário cadastrado</p>
+                                        )
+                                    }
+                                </div>
                             </div>
-                        </div>
                         </div>
 
                     </ContainerRules>
@@ -1160,11 +1286,16 @@ transition: transform 0.3s;
                                 {...bookedAppointments}
                             />
                         </Paper>
-                        {
-                            datarow ? (<Button style={{ alignSelf: 'flex-end', marginTop: 10 }} variant='contained' onClick={() => setSelectionItem()}>Enviar Mensagem</Button>
+                        <div style={{ width: '100%', display: 'flex', gap: 10, justifyContent: 'flex-end' }} >
+                            <Button style={{ alignSelf: 'flex-end', marginTop: 10, backgroundColor: 'green', color: "white" }} variant='outlined' onClick={() => setOpenList(true)}>Agendar Manual</Button>
 
-                            ) : <Button style={{ alignSelf: 'flex-end', marginTop: 10 }} variant='outlined' onClick={() => null}>Enviar Mensagem</Button>
-                        }
+                            {
+                                datarow ? (<Button style={{ alignSelf: 'flex-end', marginTop: 10, backgroundColor: 'red' }} variant='contained' onClick={() => deleteAgendamento()}>Cancelar Agendamento</Button>
+
+                                ) : <Button style={{ alignSelf: 'flex-end', marginTop: 10, backgroundColor: 'red', color: "white" }} variant='outlined' onClick={() => null}>Cancelar Agendamento</Button>
+                            }
+
+                        </div>
 
                         <Typography style={{ fontWeight: 'bold', color: 'white', fontSize: '22px' }} >Atendidos: </Typography>
 
@@ -1273,6 +1404,100 @@ transition: transform 0.3s;
                     <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={valorServico} label="Ex: 15.50..." onChange={text => setValorServico(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
 
                     <Button style={{ marginTop: 10, backgroundColor: '#0073b1' }} variant='contained' fullWidth onClick={() => registerServico()}>Cadastrar</Button>
+
+
+                </Box>
+            </Modal>
+
+
+            <Modal
+                open={openList}
+                onClose={handleCloseList}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box sx={style}>
+                    <div style={{ display: 'flex', flexDirection: 'row', gap: 7 }} >
+                        <Typography id="modal-modal-title" variant="h3" style={{ fontWeight: 'bold', fontSize: 20 }} >
+                            Adicionar Agendamento:
+                        </Typography>
+
+                    </div>
+                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', marginTop: 10, fontSize: 16 }} >
+                        Nome Do Cliente:
+                    </Typography>
+
+                    <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={nomeClienteManual} label="Insira o Nome...." onChange={text => setNomeClienteManual(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
+
+                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', marginTop: 10, fontSize: 16 }} >
+                        Data Formato: - 16/04:
+                    </Typography>
+
+                    <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={dateManual} label="Insira uma data Ex:.DD/MM...." onChange={text => setDateManual(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
+
+
+                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', marginTop: 10, fontSize: 16 }} >
+                        Horários disponíveis:
+                    </Typography>
+
+                    <FormControl fullWidth>
+                        <Select
+                            labelId="horario-select-label"
+                            id="horario-select"
+                            value={selectedHorarioManual}
+                            label="Horário"
+                            onChange={handleChangeHorario}
+                        >
+                            {horarioManual.map((horario, index) => (
+                                <MenuItem key={index} value={horario} >
+                                    {horario}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
+
+
+                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', marginTop: 10, fontSize: 16 }} >
+                        Escolha o Funcionário:
+                    </Typography>
+
+                    <FormControl fullWidth>
+                        <Select
+                            labelId="horario-select-label"
+                            id="employee-select"
+                            value={employeesManual}
+                            label="Horário"
+                            onChange={handleChangeFuncionario}
+                        >
+                            {/* Supondo que você tenha um array de horários chamado 'availableTimes' */}
+                            {selectedEmployeeManual.map((employee, index) => (
+                                <MenuItem key={index} value={employee} >
+                                    {employee}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
+                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', marginTop: 10, fontSize: 16 }} >
+                        Escolha o serviço:
+                    </Typography>
+
+                    <FormControl fullWidth>
+                        <Select
+                            value={servicosManual}
+                            onChange={handleChangeServicos}
+                        >
+                            {selectedServicosManual.map((servico) => (
+                                <MenuItem key={servico.tempId} value={servico.tempId}>
+                                    {servico.nome} - R$ {servico.valor}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
+
+                    <Button style={{ marginTop: 10, backgroundColor: '#0073b1' }} variant='contained' fullWidth onClick={() => cadastrarManualCliente()}>Cadastrar</Button>
 
 
                 </Box>

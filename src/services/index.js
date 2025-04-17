@@ -17,11 +17,11 @@ export function getClients() {
 
 export async function sendMessageAll(body) {
   try {
-    const response = await fetch(`${Globalurl}/instances/3DFAEF678335D000361B4E20A388CB1E/token/1BDC7D7E3A4F340F43C450FD/send-text`, {
+    const response = await fetch(`${Globalurl}/instances/3DFCF5280763B0FF47C28E66062CE0C1/token/FD15E27CF8D3D8AEFD9EE8E8/send-text`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
-        'Client-Token': 'F2af3f114069741f7ba807e72181650e9S',
+        'Client-Token': 'F461d204302454ba1851a2c62c4075797S',
       },
       body: JSON.stringify(body),
     });
@@ -44,11 +44,11 @@ export async function sendMessageAll(body) {
 
 export async function sendMessageWitchButton(bodyT) {
   try {
-    const response = await fetch(`${Globalurl}instances/3DFAEF678335D000361B4E20A388CB1E/token/1BDC7D7E3A4F340F43C450FD/send-button-list`, {
+    const response = await fetch(`${Globalurl}instances/3DFCF5280763B0FF47C28E66062CE0C1/token/FD15E27CF8D3D8AEFD9EE8E8/send-button-list`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
-        'Client-Token': 'F2af3f114069741f7ba807e72181650e9S',
+        'Client-Token': 'F461d204302454ba1851a2c62c4075797S',
       },
       body: JSON.stringify(bodyT),
     });
@@ -74,7 +74,7 @@ export function createInstance(body) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
-       'client-Token': 'F2af3f114069741f7ba807e72181650e9S'
+       'client-Token': 'F461d204302454ba1851a2c62c4075797S'
     },
     body: JSON.stringify(body)
   })
@@ -89,7 +89,7 @@ export async function lerQRCode(idi, tokeni) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'client-Token': 'F2af3f114069741f7ba807e72181650e9S',
+        'client-Token': 'F461d204302454ba1851a2c62c4075797S',
       },
     });
 
@@ -109,7 +109,7 @@ export async function listingInstances(idi, tokeni) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'client-Token': 'F2af3f114069741f7ba807e72181650e9S',
+        'client-Token': 'F461d204302454ba1851a2c62c4075797S',
       },
     });
 
@@ -132,7 +132,7 @@ export async function dataInstance(idi, tokeni) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'client-Token': 'F2af3f114069741f7ba807e72181650e9S',
+        'client-Token': 'F461d204302454ba1851a2c62c4075797S',
       },
     });
 
@@ -154,7 +154,7 @@ export async function sendImage(bodyImage) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
-        'Client-Token': 'F2af3f114069741f7ba807e72181650e9S',
+        'Client-Token': 'F461d204302454ba1851a2c62c4075797S',
       },
       body: JSON.stringify(bodyImage),
     });
@@ -209,7 +209,7 @@ export async function readMessage(idi,tokeni) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json', // Define que o conteúdo do corpo é JSON
-        'Client-Token': 'F2af3f114069741f7ba807e72181650e9S',
+        'Client-Token': 'F461d204302454ba1851a2c62c4075797S',
       },
       body: JSON.stringify(),
     });
@@ -230,8 +230,8 @@ export async function readMessage(idi,tokeni) {
 }
 
 export const atualizarWebhook = async () => {
-  const instancia = '3DFAEF678335D000361B4E20A388CB1E'; // Substitua pelo ID da sua instância
-  const token = '1BDC7D7E3A4F340F43C450FD'; // Substitua pelo seu token
+  const instancia = '3DFCF5280763B0FF47C28E66062CE0C1'; // Substitua pelo ID da sua instância
+  const token = 'FD15E27CF8D3D8AEFD9EE8E8'; // Substitua pelo seu token
   const novaUrlWebhook = 'https://backendpedro.vercel.app/webhook'; // Apontando para a rota correta
 
   try {
@@ -240,7 +240,7 @@ export const atualizarWebhook = async () => {
       { value: novaUrlWebhook }, // Corpo da requisição
       {
         headers: {
-          'Client-Token': 'F2af3f114069741f7ba807e72181650e9S', // Se necessário
+          'Client-Token': 'F461d204302454ba1851a2c62c4075797S', // Se necessário
           'Content-Type': 'application/json'
         }
       }
