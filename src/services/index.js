@@ -148,6 +148,29 @@ export async function dataInstance(idi, tokeni) {
   }
 }
 
+
+export async function dataDisconnectedInstance(idi, tokeni) {
+  try {
+    const response = await fetch(`https://api.z-api.io/instances/${idi}/token/${tokeni}/disconnect`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'client-Token': 'F461d204302454ba1851a2c62c4075797S',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro: ${response.status} - ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result; // Retorna o resultado da chamada para quem chamou a função
+  } catch (error) {
+    console.error('Erro ao buscar o QR Code:', error);
+    throw error; // Repassa o erro para que possa ser tratado por quem chamou
+  }
+}
+
 export async function sendImage(bodyImage) {
   try {
     const response = await fetch(`${Globalurl}/send-image`, {

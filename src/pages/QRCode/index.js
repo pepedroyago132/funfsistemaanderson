@@ -4,13 +4,54 @@ import { useNavigate } from 'react-router-dom';
 import QRCode from "react-qr-code";
 import Button from '@mui/material/Button';
 import "firebase/database";
-import { dataInstance, lerQRCode, listingInstances } from '../../services';
+import { dataInstance, lerQRCode, listingInstances,dataDisconnectedInstance } from '../../services';
 import Header from '../../components/Header';
+import styled from 'styled-components';
+import Box from '@mui/material/Box';
 
 const QRCodePage = () => {
     const navigate = useNavigate()
-    const [connected, setConnected] = React.useState('');
+    const [connected, setConnected] = React.useState(false);
     const [qrCode, setQRCode] = React.useState(false);
+    const [revalidate, setRevalidate] = React.useState(false);
+
+    const BoxCard = styled.div`
+  width: 180px;
+  height: 25px;
+  padding:10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  border-radius: 8px;
+  margin: 10px;
+`;
+
+    const GreenBox = styled(BoxCard)`
+  background-color: green;
+`;
+
+ const RedBox = styled(BoxCard)`
+  background-color: grey;
+`;
+
+
+    const RenderConnected = () => {
+        if (connected) {
+            return (
+                <GreenBox>Conectado</GreenBox>
+            )
+        } else {
+            return (
+                <RedBox>Desconectado</RedBox>
+            )
+        }
+    }
+
+
+
 
     const RenderQR = () => {
         if (!qrCode) {
@@ -30,12 +71,12 @@ const QRCodePage = () => {
     }
 
     async function GerarQRCode() {
-        if(connected){
-            return window.alert('Conectado')
-        }else{
+        if (connected) {
+            window.alert('Celular Conectado')
+        } else {
             const idi = '3DFCF5280763B0FF47C28E66062CE0C1';
             const tokeni = 'FD15E27CF8D3D8AEFD9EE8E8';
-    
+
             try {
                 const response = await lerQRCode(idi, tokeni); // Aguarda a função retornar o resultado
                 setQRCode(response); // Atualiza o estado ou faz o que for necessário com o QR Code
@@ -44,7 +85,7 @@ const QRCodePage = () => {
                 console.error('TRYCAYCHERROR:::::QRCODE:::', error); // Lida com erros
             }
         }
-     
+
     }
 
     async function listingInstacesValue() {
@@ -64,12 +105,13 @@ const QRCodePage = () => {
         const tokeni = 'FD15E27CF8D3D8AEFD9EE8E8';
 
         try {
-            const response = await dataInstance(idi,tokeni); // Aguarda a função retornar o resultado
-            if(response.connected){
-                window.alert('Celular Conectado!')
+            const response = await dataInstance(idi, tokeni); // Aguarda a função retornar o resultado
+            if (response.connected) {
+
                 setConnected(true)
-                navigate('/measure')
-            }else{
+                window.alert('Celular Conectado')
+
+            } else {
                 return null
             }
         } catch (error) {
@@ -77,33 +119,48 @@ const QRCodePage = () => {
         }
     }
 
+    async function disconnectedInstance() {
+        const idi = '3DFCF5280763B0FF47C28E66062CE0C1';
+        const tokeni = 'FD15E27CF8D3D8AEFD9EE8E8';
+
+        try {
+            const response = await dataDisconnectedInstance(idi, tokeni); // Aguarda a função retornar o resultado
+            if (response) {
+
+                window.alert('Celular Desconectado')
+                setRevalidate(true)
+
+            } else {
+                return null
+            }
+        } catch (error) {
+            console.error('TRYCAYCHERROR:::::QRCODE:::', error); // Lida com erros
+        }
+    }
+
+
     React.useEffect(() => {
         dataInstanceValue();
-        const interval = setInterval(() => {
-            console.log("Função executada!");
-            dataInstanceValue();
-          }, 3000); // Executa a cada 3 segundos
-      
-          // Limpa o intervalo quando o componente for desmontado
-          return () => clearInterval(interval);
-       
-    },[])
+    }, [connected,revalidate])
 
     return (
         <>
-        <Header />
-        <PageContainer>
-            <FormContainer>
+            <Header />
+            <PageContainer>
+                <FormContainer>
+                    <RenderConnected />
 
-                <Title>Gere seu QRCode WhatsApp</Title>
-                <Title>Para se conectar a automação</Title>
-                <Title>Você terá 20 segundos para ler seu QRCode</Title>
-                
-                <RenderQR />
-                <Button id='Button-id' fullWidth variant='outlined' onClick={() => GerarQRCode()}>Gerar QRCode ( gerar de novo )</Button>
+                    <Title>Gere seu QRCode WhatsApp</Title>
+                    <Title>Para se conectar a automação</Title>
+                    <Title>Você terá 20 segundos para ler seu QRCode</Title>
 
-            </FormContainer>
-        </PageContainer>
+                    <RenderQR />
+                    <Button id='Button-id' fullWidth variant='contained' onClick={() => GerarQRCode()}>Gerar QRCode ( gerar de novo )</Button>
+
+                    <Button id='Button-id' style={{ backgroundColor: 'red' }} fullWidth variant='contained' onClick={() => disconnectedInstance()}>Desconectar Número</Button>
+
+                </FormContainer>
+            </PageContainer>
         </>
     );
 }

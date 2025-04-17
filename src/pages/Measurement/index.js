@@ -123,15 +123,8 @@ const Measurement = () => {
     const [openRegister, setOpenRegister] = React.useState(false);
     const [openList, setOpenList] = React.useState(false);
     const [datarow, setDataRow] = React.useState(false);
-    const [datarowSelection, setDataRowSelection] = React.useState('');
-    const [messageAll, setMessageAll] = React.useState('');
-    const [farmaceutico, setFarmaceutico] = React.useState('');
     const [dataClientes, setDataClientes] = React.useState([]);
     const [clientesRecompra, setClientesRecompra] = React.useState([]);
-    const [agendamentoData, setAgendamento] = React.useState({
-        time: '',
-        employee: ''
-    });
     const [time, setTime] = React.useState('');
     const [formattedTime, setFormattedTime] = React.useState('');
     const [date, setDate] = React.useState('');
@@ -145,14 +138,11 @@ const Measurement = () => {
     const listRef = React.useRef(null);
     const [paymentState, setPaymentState] = React.useState({ assinatura: false });
     const [dataRowRecompra, setDataRowRecompra] = React.useState('');
-    const [valorRecompra, setValorRecompra] = React.useState('');
     const [relatorio, setRelatorio] = React.useState('');
-
-    const [valorRecompraNegativo, setValorNegativoRecompra] = React.useState(false);
     const [messageDataUser, setMessageDataUser] = React.useState(false);
     const [paymentLinks, setPaymentLinks] = React.useState([]);
 
-    const isMobile = useMediaQuery('(max-width:600px)');
+
 
     const [bookedAppointments, setBookedAppointments] = React.useState([]);
     const [availableTimes, setAvailableTimes] = React.useState([]);
@@ -175,10 +165,13 @@ const Measurement = () => {
     const [dateManual, setDateManual] = React.useState('');
     const [employeesManual, setEmployeesManual] = React.useState([]);
     const [selectedHorarioManual, setSelectedHorarioManual] = React.useState('');
-    const [servicosManual, setServicosManual] = React.useState([]);
-    const [selectedServicosManual, setSelectedServicoManual] = React.useState([]);
+    const [servicosManual, setServicosManual] = React.useState({servicosSelecionados: []});
+    const [selectedServicosManual, setSelectedServicoManual] = React.useState( []);
     const [selectedEmployeeManual, setSelectedEmployeeManual] = React.useState([]);
     const [nomeClienteManual, setNomeClienteManual] = React.useState('');
+    const [numeroClienteManual, setNumeroClienteManual] = React.useState('');
+    const [atendimentoEtapa, setAtendimentoEtapa] = React.useState(false);
+    const [attendedAppointments, setAttendedAppointments] = React.useState([]);
 
 
 
@@ -191,7 +184,9 @@ const Measurement = () => {
     };
 
     const handleChangeServicos = (event) => {
-        setServicosManual(event.target.value);
+        const selectedValues = event.target.value;
+       console.log(selectedValues)
+  setServicosManual(selectedValues);
     };
 
 
@@ -420,7 +415,9 @@ transition: transform 0.3s;
         { field: 'nome', headerName: 'Nome', width: 130 },
         { field: 'employee', headerName: 'Quem Atende', width: 150 },
         { field: 'time', headerName: 'Horário', width: 130 },
-        { field: 'phone', headerName: 'Contato', width: 150 }
+        { field: 'date', headerName: 'Data ( para ):', width: 150 },
+        { field: 'phone', headerName: 'Contato', width: 150 },
+        { field: 'valorServico', headerName: 'Valor do Serviço', width: 150 }
 
     ];
 
@@ -434,10 +431,10 @@ transition: transform 0.3s;
 
     const data = [
         { title: "Agendamentos Hoje", value: relatorio ? relatorio.clientes : 0, percentage: "+0%" },
-        { title: "Agendamentos atendidos", value: /*dataClientes ? dataClientes.length : 0*/ 0, percentage: "+0%" },
-        { title: "Confirmaram Presença", value:/* `R$ ${relatorio ? relatorio.valorTotalM.toFixed(2).replace('.', ',') : 0}`*/'00', percentage: "+0%" },
+        { title: "Agendamentos atendidos", value: relatorio.clientesAtendidos ? relatorio.clientesAtendidos : 0, percentage: "+0%" },
+        { title: "Valor Agendado", value: `R$ ${relatorio.valorEmClientes ? relatorio.valorEmClientes.toFixed(2).replace('.', ',') : 0}`, percentage: "+0%" },
 
-        { title: "Receita", value: /*`R$ ${valorRecompra ? valorRecompra.valor.toFixed(2).replace('.', ',') : 0}`*/'R$380,00', percentage: "+0%" },
+        { title: "Receita Líquida", value: `R$ ${relatorio.valorEmClientesAtendidos ? relatorio.valorEmClientesAtendidos.toFixed(2).replace('.', ',') : 0}`, percentage: "+0%" },
     ];
 
     const paginationModel = { page: 0, pageSize: 5 };
@@ -490,7 +487,7 @@ transition: transform 0.3s;
         setDataRow(selectedRowData ? [selectedRowData] : []);
     };
 
-    console.log('AGENDAMENTO SLECIONADO::::::::::::::', datarow)
+    console.log('ATENDIDOVALORES::::::::::::::', relatorio)
 
     const handleRowRecompra = (selectionModel) => {
         // Pegar os dados das linhas selecionadas
@@ -500,6 +497,47 @@ transition: transform 0.3s;
         console.log('Linhas selecionadas:', selectedRowsData);
     };
 
+    console.log('VALORR LINHA SELECIONADA', datarow[0]);
+
+    const clientesAtendidos = () => {
+        const db = getDatabase();
+
+        const postData = {
+            time: datarow[0].time,
+                date:  datarow[0].date,
+                employee:  datarow[0].employee,
+                id:  datarow[0].id,
+                phone:  datarow[0].phone,
+                nome: datarow[0].nome,
+                servico:  datarow[0].servico,
+                digit:  datarow[0].digit,
+                valorServico:  datarow[0].valorServico,
+                atendido:true
+        };
+
+        const updatesData = {};
+        updatesData[`${base64.encode(user.email)}/agendamentos/${base64.encode(datarow[0].phone + datarow[0].digit)}`] = postData;
+        update(ref(db), updatesData).then(() => {
+       console.log('passou')
+       
+        }).catch(console.error);
+
+        const post = {
+            clientesAtendidos: parseFloat(relatorio?.clientesAtendidos)  + 1,
+            valorEmClientesAtendidos:parseFloat(relatorio?.valorEmClientesAtendidos) + parseFloat(datarow[0].valorServico),
+            clientes: relatorio.clientes ,
+            valorEmClientes: parseFloat(relatorio.valorEmClientes)
+        };
+
+        const updates = {};
+        updates[`${base64.encode(user.email)}/relatorios`] = post;
+        update(ref(db), updates).then(() => {
+            setAtendimentoEtapa(!atendimentoEtapa)
+            alert('Atendimento concluído com Sucesso!')
+        }).catch(console.error);
+    
+    }
+
     const deleteAgendamento = (selectionModel) => {
         const db = getDatabase();
         const post = {
@@ -508,7 +546,7 @@ transition: transform 0.3s;
 
 
 
-        remove(ref(db, `${base64.encode(user.email)}/servicos/${base64.encode(datarow.phone + datarow.digit)}`), {})
+        remove(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(datarow[0].phone + datarow[0].digit)}`))
             .then(() => {
                 const updates = {};
                 updates[`${base64.encode(user.email)}/relatorios`] = post;
@@ -517,31 +555,54 @@ transition: transform 0.3s;
             .catch(err => console.log(err));
     };
 
+    console.log('REALTORIOSSSS:::::::::::::',relatorio.valorEmClientes)
+
+    console.log('REALTORIOSSSSVALORSERVICOMANUAL:::::::::::::',servicosManual.valor)
+
     const cadastrarManualCliente = () => {
-        const digit1 = bookedAppointments.length + 1
 
-        const db = getDatabase();
-        set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(messageDataUser.phone + digit1)}`), {
-            time: horarioManual,
-            date: dateManual,
-            employee: employeesManual,
-            id: digit1,
-            phone: '00000000',
-            nome: nomeClienteManual,
-            servico: servicosManual,
-            digit: digit1
-        })
-            .then(() => sendMessageAll(body))
-            .catch(() => sendMessageAll(bodyError));
+        if(!selectedHorarioManual || !dateManual || !employeesManual || !nomeClienteManual){
+            window.alert('Preencha os Campos!')
+        }{
+            const digit1 = bookedAppointments.length + 1
 
-        const post = {
-            clientes: relatorio.clientes + 1,
-        };
+            const db = getDatabase();
+            set(ref(db, `${base64.encode(user.email)}/agendamentos/${base64.encode(numeroClienteManual + digit1)}`), {
+                time: selectedHorarioManual,
+                date: dateManual,
+                employee: employeesManual,
+                id: digit1,
+                phone: numeroClienteManual,
+                nome: nomeClienteManual,
+                servico: servicosManual.nome,
+                digit: digit1,
+                atendido:false,
+                valorServico:servicosManual.valor
+            })
+                .then(() => sendMessageAll(body))
+                .catch(() => sendMessageAll(bodyError));
 
-        const updates = {};
-        updates[`${base64.encode(user.email)}/relatorios`] = post;
-        update(ref(db), updates).catch(console.error);
-handleCloseList()
+              
+    
+            const post = {
+                clientes: relatorio.clientes + 1,
+                valorEmClientes: parseFloat(relatorio?.valorEmClientes)  + parseFloat(servicosManual.valor),
+                valorEmClientesAtendidos: parseFloat(relatorio?.valorEmClientesAtendidos),
+                clientesAtendidos: parseFloat(relatorio?.clientesAtendidos)
+            };
+    
+            const updates = {};
+            updates[`${base64.encode(user.email)}/relatorios`] = post;
+            update(ref(db), updates).catch(console.error);
+            const body = {
+                message: `✅ Agendamento Confirmado com ${employeesManual} às ${selectedHorarioManual} para ${servicosManual} no dia ${dateManual}.`,
+                phone: `+${numeroClienteManual}`,
+                delayMessage: 2
+            };
+            sendMessageAll(body)
+            handleCloseList()
+        }
+       
     }
 
 
@@ -558,20 +619,42 @@ handleCloseList()
 
                 const unsubscribe = onValue(appointmentsRef, (snapshot) => {
                     const data = snapshot.val();
-                    const formatted = data
-                        ? Object.values(data).map((appt) => ({
+                    
+                    if (data) {
+                        // Obtém a data atual no formato dd/mm
+                        const today = new Date();
+                        const day = String(today.getDate()).padStart(2, '0');
+                        const month = String(today.getMonth() + 1).padStart(2, '0');
+                        const todayFormatted = `${day}/${month}`;
+                
+                        const allAppointments = Object.values(data).map((appt) => ({
                             time: appt.time,
                             employee: appt.employee,
-                            time: appt.time,
                             id: appt.id,
                             phone: appt.phone,
                             nome: appt.nome,
                             servico: appt.servico,
                             date: appt.date,
-                            digit: appt.digit
-                        }))
-                        : [];
-                    setBookedAppointments(formatted);
+                            digit: appt.digit,
+                            atendido: appt.atendido,
+                            valorServico: appt.valorServico
+                        }));
+                
+                        // Filtra agendamentos NÃO atendidos E de hoje
+                        const notAttendedToday = allAppointments.filter((appt) => 
+                            appt.atendido === false && appt.date === todayFormatted
+                        );
+                        setBookedAppointments(notAttendedToday);
+                
+                        // Filtra agendamentos ATENDIDOS E de hoje (opcional)
+                        const attendedToday = allAppointments.filter((appt) => 
+                            appt.atendido === true && appt.date === todayFormatted
+                        );
+                        setAttendedAppointments(attendedToday);
+                    } else {
+                        setBookedAppointments([]);
+                        setAttendedAppointments([]);
+                    }
                 });
 
 
@@ -588,7 +671,7 @@ handleCloseList()
         }
         )
 
-    }, [])
+    }, [atendimentoEtapa])
 
     React.useEffect(() => {
         const instancia = "3DFCF5280763B0FF47C28E66062CE0C1"; // Substitua pelo ID da instância
@@ -763,12 +846,13 @@ handleCloseList()
 
     }, [dateManual, horarioManual, userData.funcionarios, bookedAppointments]);
 
+
     React.useEffect(() => {
 
         if (userMessage.toLowerCase() === "agendar") {
             const bodyT = {
                 phone: `+${messageDataUser.phone}`,
-                message: "Olá tudo bom aqui é do(a) ESTABELECIMENTO, caso queira *Agendar Agora*, digite *1*, caso queira *Falar com Atendente* digite *2*?",
+                message: `${userData.mensagens.msgCadastro}`,
                 delayMessage: 2
             };
 
@@ -827,7 +911,7 @@ handleCloseList()
             // Envia a resposta
             if (availableTimes.length > 0) {
                 const body = {
-                    message: `Horários disponíveis para ${formattedDate}:\n\n${availableTimes.join('\n')}\n\nDigite o horário desejado (ex: 14:00)`,
+                    message: `Horários disponíveis para ${formattedDate}:\n\n${availableTimes.join('\n')}\n\n*Digite o horário desejado (ex: 14:00)*`,
                     phone: `+${messageDataUser.phone}`,
                     delayMessage: 2
                 };
@@ -927,7 +1011,7 @@ handleCloseList()
 
 
 
-    }, [userMessage, selectedDate]);
+    }, [userMessage, selectedDate,servicoSelecionado]);
 
 
     React.useEffect(() => {
@@ -964,22 +1048,29 @@ handleCloseList()
                 phone: messageDataUser.phone,
                 nome: messageDataUser.senderName,
                 servico: servicoSelecionado?.nome ?? "",
-                digit: digit1
+                digit: digit1,
+                atendido:false,
+                valorServico:servicoSelecionado.valor
             })
                 .then(() => sendMessageAll(body))
                 .catch(() => sendMessageAll(bodyError));
 
-            const post = {
-                clientes: relatorio.clientes + 1,
-            };
-
-            const updates = {};
-            updates[`${base64.encode(user.email)}/relatorios`] = post;
-            update(ref(db), updates).catch(console.error);
+                const post = {
+                    clientes: relatorio.clientes + 1,
+                    valorEmClientes: parseFloat(relatorio?.valorEmClientes)  + parseFloat(servicoSelecionado.valor),
+                    valorEmClientesAtendidos: parseFloat(relatorio?.valorEmClientesAtendidos),
+                    clientesAtendidos: parseFloat(relatorio?.clientesAtendidos)
+                };
+        
+                const updates = {};
+                updates[`${base64.encode(user.email)}/relatorios`] = post;
+                update(ref(db), updates).catch(console.error);
 
             setEtapaConfirm(false);
             setProxAgendar(false);
             setSelectedDate(false);
+            setSelectedTime(false)
+            setServicoSelecionado(false)
         }
     }, [userMessage, etapaConfirm]);
 
@@ -1026,19 +1117,7 @@ handleCloseList()
 
     React.useEffect(() => {
         const dataa = getDatabase()
-        const db = ref(dataa, `${base64.encode(user.email)}/relatorios/recompra`); // Referência para a coleção 'clientes'
         const dbRef = ref(getDatabase());
-
-
-        onValue(db, (snapshot) => {
-            if (snapshot.exists()) {
-                setValorRecompra(snapshot.val())
-            } else {
-                console.log("No data available");
-            }
-
-        });
-
 
         get(child(dbRef, `${base64.encode(user.email)}/relatorios`)).then((snapshot) => {
             if (snapshot.exists()) {
@@ -1050,7 +1129,7 @@ handleCloseList()
             console.error(error);
         });
 
-    }, [user])
+    }, [user,bookedAppointments])
 
 
 
@@ -1282,18 +1361,23 @@ handleCloseList()
                                 sx={{ border: 0 }}
                                 onRowSelectionModelChange={handleRowSelection}
                                 disableRowSelectionOnClick={false}
-                                getRowId={bookedAppointments.id}
+                                getRowId={bookedAppointments.digit}
                                 {...bookedAppointments}
                             />
                         </Paper>
                         <div style={{ width: '100%', display: 'flex', gap: 10, justifyContent: 'flex-end' }} >
-                            <Button style={{ alignSelf: 'flex-end', marginTop: 10, backgroundColor: 'green', color: "white" }} variant='outlined' onClick={() => setOpenList(true)}>Agendar Manual</Button>
-
+                         
                             {
                                 datarow ? (<Button style={{ alignSelf: 'flex-end', marginTop: 10, backgroundColor: 'red' }} variant='contained' onClick={() => deleteAgendamento()}>Cancelar Agendamento</Button>
 
                                 ) : <Button style={{ alignSelf: 'flex-end', marginTop: 10, backgroundColor: 'red', color: "white" }} variant='outlined' onClick={() => null}>Cancelar Agendamento</Button>
                             }
+
+<Button style={{ alignSelf: 'flex-end', marginTop: 10, backgroundColor: 'green', color: "white" }} variant='contained' onClick={() => setOpenList(true)}>Agendar Manual</Button>
+
+
+<Button style={{ alignSelf: 'flex-end', marginTop: 10, color: "white" }} variant='contained' onClick={() => clientesAtendidos()}>Atendimento Concluído</Button>
+                    
 
                         </div>
 
@@ -1303,14 +1387,14 @@ handleCloseList()
 
                             <DataGrid
 
-                                rows={clientesRecompra}
+                                rows={attendedAppointments}
                                 columns={columns}
                                 initialState={{ pagination: { paginationModel } }}
                                 pageSizeOptions={[10]}
                                 checkboxSelection
-                                sx={{ border: '6px dotted green' }}
+                                sx={{ border: '6px dotted #0073b1' }}
                                 onRowSelectionModelChange={handleRowRecompra}
-                                {...clientesRecompra}
+                                {...attendedAppointments}
                             />
                         </Paper>
 
@@ -1430,7 +1514,13 @@ handleCloseList()
                     <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={nomeClienteManual} label="Insira o Nome...." onChange={text => setNomeClienteManual(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
 
                     <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', marginTop: 10, fontSize: 16 }} >
-                        Data Formato: - 16/04:
+                        Número WhatsApp
+                    </Typography>
+
+                    <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={numeroClienteManual} label="Insira o Nome...." onChange={text => setNumeroClienteManual(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
+
+                    <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', marginTop: 10, fontSize: 16 }} >
+                        Data Formato: - Ex:. 16/04:
                     </Typography>
 
                     <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={dateManual} label="Insira uma data Ex:.DD/MM...." onChange={text => setDateManual(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
@@ -1489,7 +1579,7 @@ handleCloseList()
                             onChange={handleChangeServicos}
                         >
                             {selectedServicosManual.map((servico) => (
-                                <MenuItem key={servico.tempId} value={servico.tempId}>
+                                <MenuItem key={servico.tempId} value={servico}>
                                     {servico.nome} - R$ {servico.valor}
                                 </MenuItem>
                             ))}

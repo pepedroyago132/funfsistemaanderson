@@ -62,14 +62,22 @@ const Register = () => {
       // Configura dados no Realtime Database
       const databasePath = `${base64.encode(emailInput)}/mensagens`;
       await set(ref(database, databasePath), {
-        msgHorario: "Olá esta no horário da sua medicação",
-        msgCadastro: "Olá vimos que acabou de comprar seu medicamento, te avisaremos do horário",
+        msgHorario: "",
+        msgCadastro: "Olá tudo bom aqui é do(a) ESTABELECIMENTO, caso queira *Agendar Agora*, digite *1*, caso queira *Falar com Atendente* digite *2*",
       });
 
       const databaseInsertData = `${base64.encode(emailInput)}/isconnected`;
       await set(ref(database, databaseInsertData), {
         isConnected: 0,
         });
+
+        const dataBaseInsertRelatorios = `${base64.encode(emailInput)}/relatorios`;
+        await set(ref(database, dataBaseInsertRelatorios), {
+          clientes: 0,
+          clientesAtendidos:0,
+          valorEmClientes:0,
+          valorEmClientesAtendidos:0
+          });
 
       // Envia email de verificação
       const user = userCredential.user;
