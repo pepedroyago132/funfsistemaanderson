@@ -65,6 +65,19 @@ const style = {
     },
 };
 
+const styleFuncServ = {
+    display: 'flex',
+     alignItems: 'flex-start',
+      justifyContent: 'center', 
+      gap: 15,
+
+    // Responsivo com breakpoints do MUI
+    '@media (max-width:720px)': {
+       flexDirection:'column'
+    },
+};
+
+
 const styleModalRegister = {
     maxHeight: '100vh',
     position: 'absolute',
@@ -165,8 +178,8 @@ const Measurement = () => {
     const [dateManual, setDateManual] = React.useState('');
     const [employeesManual, setEmployeesManual] = React.useState([]);
     const [selectedHorarioManual, setSelectedHorarioManual] = React.useState('');
-    const [servicosManual, setServicosManual] = React.useState({servicosSelecionados: []});
-    const [selectedServicosManual, setSelectedServicoManual] = React.useState( []);
+    const [servicosManual, setServicosManual] = React.useState({ servicosSelecionados: [] });
+    const [selectedServicosManual, setSelectedServicoManual] = React.useState([]);
     const [selectedEmployeeManual, setSelectedEmployeeManual] = React.useState([]);
     const [nomeClienteManual, setNomeClienteManual] = React.useState('');
     const [numeroClienteManual, setNumeroClienteManual] = React.useState('');
@@ -185,8 +198,8 @@ const Measurement = () => {
 
     const handleChangeServicos = (event) => {
         const selectedValues = event.target.value;
-       console.log(selectedValues)
-  setServicosManual(selectedValues);
+        console.log(selectedValues)
+        setServicosManual(selectedValues);
     };
 
 
@@ -504,28 +517,28 @@ transition: transform 0.3s;
 
         const postData = {
             time: datarow[0].time,
-                date:  datarow[0].date,
-                employee:  datarow[0].employee,
-                id:  datarow[0].id,
-                phone:  datarow[0].phone,
-                nome: datarow[0].nome,
-                servico:  datarow[0].servico,
-                digit:  datarow[0].digit,
-                valorServico:  datarow[0].valorServico,
-                atendido:true
+            date: datarow[0].date,
+            employee: datarow[0].employee,
+            id: datarow[0].id,
+            phone: datarow[0].phone,
+            nome: datarow[0].nome,
+            servico: datarow[0].servico,
+            digit: datarow[0].digit,
+            valorServico: datarow[0].valorServico,
+            atendido: true
         };
 
         const updatesData = {};
         updatesData[`${base64.encode(user.email)}/agendamentos/${base64.encode(datarow[0].phone + datarow[0].digit)}`] = postData;
         update(ref(db), updatesData).then(() => {
-       console.log('passou')
-       
+            console.log('passou')
+
         }).catch(console.error);
 
         const post = {
-            clientesAtendidos: parseFloat(relatorio?.clientesAtendidos)  + 1,
-            valorEmClientesAtendidos:parseFloat(relatorio?.valorEmClientesAtendidos) + parseFloat(datarow[0].valorServico),
-            clientes: relatorio.clientes ,
+            clientesAtendidos: parseFloat(relatorio?.clientesAtendidos) + 1,
+            valorEmClientesAtendidos: parseFloat(relatorio?.valorEmClientesAtendidos) + parseFloat(datarow[0].valorServico),
+            clientes: relatorio.clientes,
             valorEmClientes: parseFloat(relatorio.valorEmClientes)
         };
 
@@ -535,7 +548,7 @@ transition: transform 0.3s;
             setAtendimentoEtapa(!atendimentoEtapa)
             alert('Atendimento concluído com Sucesso!')
         }).catch(console.error);
-    
+
     }
 
     const deleteAgendamento = (selectionModel) => {
@@ -555,15 +568,15 @@ transition: transform 0.3s;
             .catch(err => console.log(err));
     };
 
-    console.log('REALTORIOSSSS:::::::::::::',relatorio.valorEmClientes)
+    console.log('REALTORIOSSSS:::::::::::::', relatorio.valorEmClientes)
 
-    console.log('REALTORIOSSSSVALORSERVICOMANUAL:::::::::::::',servicosManual.valor)
+    console.log('REALTORIOSSSSVALORSERVICOMANUAL:::::::::::::', servicosManual.valor)
 
     const cadastrarManualCliente = () => {
 
-        if(!selectedHorarioManual || !dateManual || !employeesManual || !nomeClienteManual){
+        if (!selectedHorarioManual || !dateManual || !employeesManual || !nomeClienteManual) {
             window.alert('Preencha os Campos!')
-        }{
+        } {
             const digit1 = bookedAppointments.length + 1
 
             const db = getDatabase();
@@ -576,21 +589,21 @@ transition: transform 0.3s;
                 nome: nomeClienteManual,
                 servico: servicosManual.nome,
                 digit: digit1,
-                atendido:false,
-                valorServico:servicosManual.valor
+                atendido: false,
+                valorServico: servicosManual.valor
             })
                 .then(() => sendMessageAll(body))
                 .catch(() => sendMessageAll(bodyError));
 
-              
-    
+
+
             const post = {
                 clientes: relatorio.clientes + 1,
-                valorEmClientes: parseFloat(relatorio?.valorEmClientes)  + parseFloat(servicosManual.valor),
+                valorEmClientes: parseFloat(relatorio?.valorEmClientes) + parseFloat(servicosManual.valor),
                 valorEmClientesAtendidos: parseFloat(relatorio?.valorEmClientesAtendidos),
                 clientesAtendidos: parseFloat(relatorio?.clientesAtendidos)
             };
-    
+
             const updates = {};
             updates[`${base64.encode(user.email)}/relatorios`] = post;
             update(ref(db), updates).catch(console.error);
@@ -602,7 +615,7 @@ transition: transform 0.3s;
             sendMessageAll(body)
             handleCloseList()
         }
-       
+
     }
 
 
@@ -619,14 +632,14 @@ transition: transform 0.3s;
 
                 const unsubscribe = onValue(appointmentsRef, (snapshot) => {
                     const data = snapshot.val();
-                    
+
                     if (data) {
                         // Obtém a data atual no formato dd/mm
                         const today = new Date();
                         const day = String(today.getDate()).padStart(2, '0');
                         const month = String(today.getMonth() + 1).padStart(2, '0');
                         const todayFormatted = `${day}/${month}`;
-                
+
                         const allAppointments = Object.values(data).map((appt) => ({
                             time: appt.time,
                             employee: appt.employee,
@@ -639,15 +652,15 @@ transition: transform 0.3s;
                             atendido: appt.atendido,
                             valorServico: appt.valorServico
                         }));
-                
+
                         // Filtra agendamentos NÃO atendidos E de hoje
-                        const notAttendedToday = allAppointments.filter((appt) => 
+                        const notAttendedToday = allAppointments.filter((appt) =>
                             appt.atendido === false && appt.date === todayFormatted
                         );
                         setBookedAppointments(notAttendedToday);
-                
+
                         // Filtra agendamentos ATENDIDOS E de hoje (opcional)
-                        const attendedToday = allAppointments.filter((appt) => 
+                        const attendedToday = allAppointments.filter((appt) =>
                             appt.atendido === true && appt.date === todayFormatted
                         );
                         setAttendedAppointments(attendedToday);
@@ -1011,7 +1024,7 @@ transition: transform 0.3s;
 
 
 
-    }, [userMessage, selectedDate,servicoSelecionado]);
+    }, [userMessage, selectedDate, servicoSelecionado]);
 
 
     React.useEffect(() => {
@@ -1049,22 +1062,22 @@ transition: transform 0.3s;
                 nome: messageDataUser.senderName,
                 servico: servicoSelecionado?.nome ?? "",
                 digit: digit1,
-                atendido:false,
-                valorServico:servicoSelecionado.valor
+                atendido: false,
+                valorServico: servicoSelecionado.valor
             })
                 .then(() => sendMessageAll(body))
                 .catch(() => sendMessageAll(bodyError));
 
-                const post = {
-                    clientes: relatorio.clientes + 1,
-                    valorEmClientes: parseFloat(relatorio?.valorEmClientes)  + parseFloat(servicoSelecionado.valor),
-                    valorEmClientesAtendidos: parseFloat(relatorio?.valorEmClientesAtendidos),
-                    clientesAtendidos: parseFloat(relatorio?.clientesAtendidos)
-                };
-        
-                const updates = {};
-                updates[`${base64.encode(user.email)}/relatorios`] = post;
-                update(ref(db), updates).catch(console.error);
+            const post = {
+                clientes: relatorio.clientes + 1,
+                valorEmClientes: parseFloat(relatorio?.valorEmClientes) + parseFloat(servicoSelecionado.valor),
+                valorEmClientesAtendidos: parseFloat(relatorio?.valorEmClientesAtendidos),
+                clientesAtendidos: parseFloat(relatorio?.clientesAtendidos)
+            };
+
+            const updates = {};
+            updates[`${base64.encode(user.email)}/relatorios`] = post;
+            update(ref(db), updates).catch(console.error);
 
             setEtapaConfirm(false);
             setProxAgendar(false);
@@ -1129,7 +1142,7 @@ transition: transform 0.3s;
             console.error(error);
         });
 
-    }, [user,bookedAppointments])
+    }, [user, bookedAppointments])
 
 
 
@@ -1291,10 +1304,10 @@ transition: transform 0.3s;
 
 
                         </ContainerT>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: 15 }} >
+                        <div style={styleFuncServ} >
                             <div style={{ display: "flex", flexDirection: 'column' }} >
                                 <h3 style={{ color: 'Black', alignSelf: 'flex-start', fontSize: 22 }} >Serviços:</h3>
-                                <div style={{ display: 'flex', width: '45%', gap: 10, minWidth: 220 }} >
+                                <div style={{ display: 'flex', width: '45%', gap: 10, minWidth: 220,flexWrap:'wrap' }} >
 
                                     {
                                         userData?.servicos ? (
@@ -1320,7 +1333,7 @@ transition: transform 0.3s;
 
                             <div style={{ display: "flex", flexDirection: 'column' }} >
                                 <h3 style={{ color: 'Black', alignSelf: 'flex-start', fontSize: 22 }} >Funcionários:</h3>
-                                <div style={{ display: 'flex', width: '45%', gap: 10, minWidth: 220 }} >
+                                <div style={{ display: 'flex', width: '45%', gap: 10, minWidth: 220,flexWrap:'wrap' }} >
 
                                     {
                                         userData?.funcionarios ? (
@@ -1366,18 +1379,18 @@ transition: transform 0.3s;
                             />
                         </Paper>
                         <div style={{ width: '100%', display: 'flex', gap: 10, justifyContent: 'flex-end' }} >
-                         
+
                             {
                                 datarow ? (<Button style={{ alignSelf: 'flex-end', marginTop: 10, backgroundColor: 'red' }} variant='contained' onClick={() => deleteAgendamento()}>Cancelar Agendamento</Button>
 
                                 ) : <Button style={{ alignSelf: 'flex-end', marginTop: 10, backgroundColor: 'red', color: "white" }} variant='outlined' onClick={() => null}>Cancelar Agendamento</Button>
                             }
 
-<Button style={{ alignSelf: 'flex-end', marginTop: 10, backgroundColor: 'green', color: "white" }} variant='contained' onClick={() => setOpenList(true)}>Agendar Manual</Button>
+                            <Button style={{ alignSelf: 'flex-end', marginTop: 10, backgroundColor: 'green', color: "white" }} variant='contained' onClick={() => setOpenList(true)}>Agendar Manual</Button>
 
 
-<Button style={{ alignSelf: 'flex-end', marginTop: 10, color: "white" }} variant='contained' onClick={() => clientesAtendidos()}>Atendimento Concluído</Button>
-                    
+                            <Button style={{ alignSelf: 'flex-end', marginTop: 10, color: "white" }} variant='contained' onClick={() => clientesAtendidos()}>Atendimento Concluído</Button>
+
 
                         </div>
 
@@ -1538,7 +1551,7 @@ transition: transform 0.3s;
                             label="Horário"
                             onChange={handleChangeHorario}
                             disabled={dateManual != '' ? false : true}
-                            
+
                         >
                             {horarioManual.map((horario, index) => (
                                 <MenuItem key={index} value={horario} >

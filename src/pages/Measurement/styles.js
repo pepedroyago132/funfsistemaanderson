@@ -102,7 +102,7 @@ display: flex;
   gap: 10px;
   padding: 18px;
    @media (max-width: 768px) { /* Ajuste o valor conforme a largura desejada */
-     flex-direction:row;
+     flex-direction:column;
       width: 95%;
   }
 `
