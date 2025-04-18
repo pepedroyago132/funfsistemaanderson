@@ -1517,7 +1517,7 @@ transition: transform 0.3s;
                         Número WhatsApp
                     </Typography>
 
-                    <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={numeroClienteManual} label="Insira o Nome...." onChange={text => setNumeroClienteManual(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
+                    <TextField id="outlined-basic-cpf" style={{ marginTop: 15 }} value={numeroClienteManual} label="Insira o Número...." onChange={text => setNumeroClienteManual(text.target.value)} placeholder='Mensagem' fullWidth variant="outlined" />
 
                     <Typography id="modal-modal-title" variant="h5" style={{ fontWeight: '500', marginTop: 10, fontSize: 16 }} >
                         Data Formato: - Ex:. 16/04:
