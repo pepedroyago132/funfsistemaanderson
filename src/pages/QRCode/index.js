@@ -74,8 +74,8 @@ const QRCodePage = () => {
         if (connected) {
             window.alert('Celular Conectado')
         } else {
-            const idi = '3DFCF5280763B0FF47C28E66062CE0C1';
-            const tokeni = 'FD15E27CF8D3D8AEFD9EE8E8';
+            const idi = '3DFE173FAF3560BF131732C54B267657';
+            const tokeni = '8F16E553FBE2392CFE841058';
 
             try {
                 const response = await lerQRCode(idi, tokeni); // Aguarda a função retornar o resultado
@@ -89,8 +89,8 @@ const QRCodePage = () => {
     }
 
     async function listingInstacesValue() {
-        const idi = '3DFCF5280763B0FF47C28E66062CE0C1';
-        const tokeni = 'FD15E27CF8D3D8AEFD9EE8E8';
+        const idi = '3DFE173FAF3560BF131732C54B267657';
+        const tokeni = '8F16E553FBE2392CFE841058';
 
         try {
             const response = await listingInstances(); // Aguarda a função retornar o resultado
@@ -101,8 +101,8 @@ const QRCodePage = () => {
     }
 
     async function dataInstanceValue() {
-        const idi = '3DFCF5280763B0FF47C28E66062CE0C1';
-        const tokeni = 'FD15E27CF8D3D8AEFD9EE8E8';
+        const idi = '3DFE173FAF3560BF131732C54B267657';
+        const tokeni = '8F16E553FBE2392CFE841058';
 
         try {
             const response = await dataInstance(idi, tokeni); // Aguarda a função retornar o resultado
@@ -120,8 +120,8 @@ const QRCodePage = () => {
     }
 
     async function disconnectedInstance() {
-        const idi = '3DFCF5280763B0FF47C28E66062CE0C1';
-        const tokeni = 'FD15E27CF8D3D8AEFD9EE8E8';
+        const idi = '3DFE173FAF3560BF131732C54B267657';
+        const tokeni = '8F16E553FBE2392CFE841058';
 
         try {
             const response = await dataDisconnectedInstance(idi, tokeni); // Aguarda a função retornar o resultado
