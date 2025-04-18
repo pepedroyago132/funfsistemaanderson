@@ -58,8 +58,8 @@ const style = {
     gap: 15,
 
     // Responsivo com breakpoints do MUI
-    '@media (max-width:600px)': {
-        width: '90%',
+    '@media (max-width:720px)': {
+        width: '80%',
         height: 'auto',
         p: 2,
     },
