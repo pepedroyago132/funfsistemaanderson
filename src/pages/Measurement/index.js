@@ -1537,6 +1537,8 @@ transition: transform 0.3s;
                             value={selectedHorarioManual}
                             label="Horário"
                             onChange={handleChangeHorario}
+                            disabled={dateManual != '' ? false : true}
+                            
                         >
                             {horarioManual.map((horario, index) => (
                                 <MenuItem key={index} value={horario} >
@@ -1559,6 +1561,7 @@ transition: transform 0.3s;
                             value={employeesManual}
                             label="Horário"
                             onChange={handleChangeFuncionario}
+                            disabled={dateManual !== '' ? false : true}
                         >
                             {/* Supondo que você tenha um array de horários chamado 'availableTimes' */}
                             {selectedEmployeeManual.map((employee, index) => (
@@ -1577,6 +1580,7 @@ transition: transform 0.3s;
                         <Select
                             value={servicosManual}
                             onChange={handleChangeServicos}
+                            disabled={dateManual !== '' ? false : true}
                         >
                             {selectedServicosManual.map((servico) => (
                                 <MenuItem key={servico.tempId} value={servico}>
