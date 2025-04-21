@@ -98,7 +98,7 @@ export const ContainerRules = styled(Box)`
 display: flex;
   align-items: center;
   flex-direction: column;
-  width: 70%;
+  width: 90%;
   gap: 10px;
   padding: 18px;
    @media (max-width: 768px) { /* Ajuste o valor conforme a largura desejada */

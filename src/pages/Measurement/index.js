@@ -1331,9 +1331,9 @@ transition: transform 0.3s;
                                 </div>
                             </div>
 
-                            <div style={{ display: "flex", flexDirection: 'column' }} >
+                            <div style={{ display: "flex", flexDirection: 'column',width:'40%' }} >
                                 <h3 style={{ color: 'Black', alignSelf: 'flex-start', fontSize: 22 }} >Funcionários:</h3>
-                                <div style={{ display: 'flex', width: '45%', gap: 10, minWidth: 220,flexWrap:'wrap' }} >
+                                <div style={{ display: 'flex', minWidth: '100%', gap: 10, flexWrap:'wrap' }} >
 
                                     {
                                         userData?.funcionarios ? (
@@ -1374,7 +1374,7 @@ transition: transform 0.3s;
                                 sx={{ border: 0 }}
                                 onRowSelectionModelChange={handleRowSelection}
                                 disableRowSelectionOnClick={false}
-                                getRowId={bookedAppointments.digit}
+                                getRowId={bookedAppointments.id}
                                 {...bookedAppointments}
                             />
                         </Paper>
