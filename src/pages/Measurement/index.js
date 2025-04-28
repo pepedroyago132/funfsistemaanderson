@@ -717,7 +717,7 @@ transition: transform 0.3s;
         return () => clearInterval(interval);
     }, []);
 
-    console.log('USERDATA::::::::', userMessage)
+    console.log('USERDATA::::::::', messageDataUser)
 
 
     React.useEffect(() => {
@@ -861,7 +861,7 @@ transition: transform 0.3s;
 
 
     React.useEffect(() => {
-
+      
         if (userMessage.toLowerCase() === "agendar") {
             const bodyT = {
                 phone: `+${messageDataUser.phone}`,
