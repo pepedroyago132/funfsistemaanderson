@@ -443,7 +443,7 @@ transition: transform 0.3s;
 
 
     const data = [
-        { title: "Agendamentos Hoje", value: relatorio ? relatorio.clientes : 0, percentage: "+0%" },
+        { title: "Agendamentos", value: relatorio ? relatorio.clientes : 0, percentage: "+0%" },
         { title: "Agendamentos atendidos", value: relatorio.clientesAtendidos ? relatorio.clientesAtendidos : 0, percentage: "+0%" },
         { title: "Valor Agendado", value: `R$ ${relatorio.valorEmClientes ? relatorio.valorEmClientes.toFixed(2).replace('.', ',') : 0}`, percentage: "+0%" },
 
@@ -1361,7 +1361,7 @@ transition: transform 0.3s;
                     </ContainerRules>
                     <div style={{ display: 'flex', flexDirection: 'column', width: '95%' }} >
 
-                        <Typography style={{ fontWeight: 'bold', color: 'black', fontSize: '22px', alignSelf: 'flex-start' }} >Agendamentos</Typography>
+                        <Typography style={{ fontWeight: 'bold', color: 'black', fontSize: '22px', alignSelf: 'flex-start' }} >Agendamentos para hoje:</Typography>
                         <InputText placeholder='Pesquisar...' value={filterValue} onChange={e => handleFilterChange(e)} />
                         <Paper sx={{ height: 400, width: '100%', alignSelf: 'flex-start' }}>
                             <DataGrid
