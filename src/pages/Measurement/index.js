@@ -59,7 +59,7 @@ const style = {
 
     // Responsivo com breakpoints do MUI
     '@media (max-width:720px)': {
-        width: '80%',
+        minWidth: '70%',
         height: 'auto',
         p: 2,
     },
